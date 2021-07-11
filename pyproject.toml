@@ -1,0 +1,57 @@
+[tool.poetry]
+name = "location-allocation"
+version = "0.1.0"
+description = ""
+authors = ["Timothy Ellersiek <tim@gis-ops.com>"]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.10"
+matplotlib = "3.4.2"
+mip = "1.13.0"
+numpy = "1.20.3"
+scikit-learn = "0.24.2"
+scipy = "1.6.3"
+Shapely = "1.7.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.0"
+pytest-cov = "^2.10"
+pytest-console-scripts = "^0.2"
+black = "20.8b1"
+isort = "4.3.21"
+pre-commit = "1.18.3"
+flake8 = "3.8.4"
+click = "7.1.2"
+flake8-docstrings = "^1.5.0"
+darglint = "^1.7.0"
+tox = "^3.23.0"
+tox-pyenv = "^1.1.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+line_length = 127
+case_sensitive = true
+use_parentheses = true
+include_trailing_comma = true
+multi_line_output = 3
+force_grid_wrap = 0

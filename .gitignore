@@ -1,0 +1,16 @@
+
+*.pyc
+.venv
+**/logs/
+.idea/
+venv/
+.venv/
+**/__pycache__/
+.coverage*
+.pytest_cache/
+htmlcov/
+.tox/
+.DS_Store
+results.txt
+.vscode
+poetry.lock
