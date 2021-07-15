@@ -35,20 +35,24 @@ class CONFIG:
         self,
         points,
         facilities,
-        facilities_capacities,
         cost_matrix,
         facilities_to_choose,
         cost_cutoff,
+        load_distribution_weight,
+        maximum_coverage_weight,
+        total_distance_weight,
     ):
         self.points = points
         self.facilities = facilities
-        self.facilities_capacities = facilities_capacities
         self.facilities_to_choose = facilities_to_choose
         self.cost_matrix = cost_matrix
         self.cost_cutoff = cost_cutoff
+        self.load_distribution_weight = load_distribution_weight
+        self.maximum_coverage_weight = maximum_coverage_weight
+        self.total_distance_weight = total_distance_weight
 
 
-def generate_initial_solution(D, I, J, C, K):
+def generate_initial_solution(D, I, J, K):
     """Generate initial solution to use as the starting point for the milp solver.
 
     Parameters
@@ -59,8 +63,6 @@ def generate_initial_solution(D, I, J, C, K):
         number of points I.
     J : int
         number of facilities.
-    C : ndarray
-        Capacity for each facility of shape (n_facilities_capacities, )
     K : int
         Maximum number of facilities to allocate.
 
@@ -89,7 +91,7 @@ def generate_initial_solution(D, I, J, C, K):
         for j in Js:
             points_assigned_to_facility = 0
             for i in Is:
-                if points_assigned_to_facility < C[j] and D[i, j] == 1:
+                if D[i, j] == 1:
                     points_assigned_to_facility += 1
                     solution.append([i, j])
 
@@ -108,13 +110,15 @@ def generate_initial_solution(D, I, J, C, K):
             return best_solution
 
 
-def maximize_capacitated_coverage(
+def maximize_coverage_minimize_cost(
     points,
     facilities,
-    facilities_capacities,
     cost_matrix,
     facilities_to_choose,
     cost_cutoff,
+    load_distribution_weight=10,
+    maximum_coverage_weight=100,
+    total_distance_weight=1,
     max_seconds=200,
 ):
     """Solve Maximum capacitated coverage location problem with MIP.
@@ -128,9 +132,6 @@ def maximize_capacitated_coverage(
         Numpy array of shape (n_points, 2).
     facilities : ndarray
         Numpy array of shape (n_facilities, 2).
-    facilities_capacities : ndarray
-        Numpy array of shape (n_facilities_capacities, ).
-        Must be the same length as facilities with capacities as integers.
     cost_matrix : ndarray
         Numpy array of shape (n_points, n_facilities).
         The distance matrix of points to facilities.
@@ -157,23 +158,33 @@ def maximize_capacitated_coverage(
 
     """
 
-    mcclp = MAXIMIZE_CAPACITATED_COVERAGE(
+    mcclp = MAXIMIZE_COVERAGE_MINIMIZE_COST(
         points=points,
         facilities=facilities,
-        facilities_capacities=facilities_capacities,
         cost_matrix=cost_matrix,
         facilities_to_choose=facilities_to_choose,
         cost_cutoff=cost_cutoff,
+        load_distribution_weight=load_distribution_weight,
+        maximum_coverage_weight=maximum_coverage_weight,
+        total_distance_weight=total_distance_weight,
     )
     mcclp.optimize(max_seconds=max_seconds)
     return mcclp.model, mcclp.result
 
 
-class MAXIMIZE_CAPACITATED_COVERAGE:
-    """Solve Maximum capacitated coverage location problem with MIP.
+class MAXIMIZE_COVERAGE_MINIMIZE_COST:
+    """Solve Maximum coverage minimum cost coverage location problem with MIP.
 
+    TODO
     Given an arbitrary amount of demand [points], find a subset [facilities_to_choose]
     of [facilities] within the [cost_cutoff] and cover as many points as possible.
+
+    we are minimising the weighted sum of all the objective terms,
+    e.g., w1 * total_obj1 + w2 * total_obj2 + w3 * total_obj3 = problem_objective
+
+    but if you increase it to a very high value (higher than the one for maximum coverage), you would end up
+    with 0 points assigned (as this would then lead to 0 distance) there is a tradeoff between the
+    three objectives, and the user needs to find the right balance
 
     Parameters
     ----------
@@ -181,9 +192,6 @@ class MAXIMIZE_CAPACITATED_COVERAGE:
         Numpy array of shape (n_points, 2).
     facilities : ndarray
         Numpy array of shape (n_facilities, 2).
-    facilities_capacities : ndarray
-        Numpy array of shape (n_facilities_capacities, ).
-        Must be the same length as facilities with capacities as integers.
     cost_matrix : ndarray
         Numpy array of shape (n_points, n_facilities).
         The distance matrix of points to facilities.
@@ -192,8 +200,12 @@ class MAXIMIZE_CAPACITATED_COVERAGE:
     cost_cutoff : int
         Cost cutoff which can be used to exclude points from the distance matrix which
         feature a greater cost.
-    max_seconds : int, default=200
-        The maximum amount of seconds given to the solver.
+    load_distribution_weight : int, default=10
+        Ask Una
+    maximum_coverage_weight : int, default=100
+        Ask Una
+    total_distance_weight : int, default=1
+        Ask Una
 
     Examples
     --------
@@ -216,12 +228,10 @@ class MAXIMIZE_CAPACITATED_COVERAGE:
             [-2.5, -2.5],
         ]
     )
-    >>> facilities_capacities = np.array([15, 15, 15, 15, 15, 15, 15, 15])
     >>> cost_matrix = distance_matrix(demand, facilities)
-    >>> mcclp = MAXIMIZE_CAPACITATED_COVERAGE(
+    >>> mcclp = MAXIMIZE_COVERAGE_MINIMIZE_COST(
         demand,
         facilities,
-        facilities_capacities,
         cost_matrix,
         facilities_to_choose=2,
         cost_cutoff=4
@@ -239,24 +249,28 @@ class MAXIMIZE_CAPACITATED_COVERAGE:
         self,
         points,
         facilities,
-        facilities_capacities,
         cost_matrix,
         facilities_to_choose,
         cost_cutoff,
+        load_distribution_weight=10,
+        maximum_coverage_weight=100,
+        total_distance_weight=1,
     ):
 
         self.config = CONFIG(
             points,
             facilities,
-            facilities_capacities,
             cost_matrix,
             facilities_to_choose,
             cost_cutoff,
+            load_distribution_weight,
+            maximum_coverage_weight,
+            total_distance_weight,
         )
 
         I = self.config.points.shape[0]
         J = self.config.facilities.shape[0]
-        # D = distance_matrix(points, sites)
+        Dist = self.config.cost_matrix
         mask1 = self.config.cost_matrix <= self.config.cost_cutoff
         self.config.cost_matrix[mask1] = 1
         self.config.cost_matrix[~mask1] = 0
@@ -277,16 +291,17 @@ class MAXIMIZE_CAPACITATED_COVERAGE:
                     var_type=mip.BINARY, name="z" + str(i) + "_" + str(j)
                 )
 
-        initial_solution = generate_initial_solution(
-            self.config.cost_matrix,
-            I,
-            J,
-            self.config.facilities_capacities,
-            self.config.facilities_to_choose,
+        maxLoad = self.model.add_var(var_type=mip.INTEGER, lb=0, ub=I, name="maxLoad")
+        minLoad = self.model.add_var(var_type=mip.INTEGER, lb=-I, ub=0, name="minLoad")
+
+        initialSolution = generate_initial_solution(
+            self.config.cost_matrix, I, J, self.config.facilities_to_choose
         )
 
         bigM = 1000000
         epsilon = 0.001
+
+        # Add constraints
 
         # exactly K allocated facilities
         self.model.add_constr(
@@ -305,13 +320,6 @@ class MAXIMIZE_CAPACITATED_COVERAGE:
                 >= y[i]
             )
 
-        # the number of points allocated to facility must not exceed facility capacity
-        for j in range(J):
-            self.model.add_constr(
-                mip.xsum(z[i, j] for i in range(I))
-                <= self.config.facilities_capacities[j]
-            )
-
         # if at least one point is allocated to facility, the facility must be considered as allocated: for all j \in J sum(z_ij) >= 1 TRUEIFF xj = true
         for j in range(J):
             self.model.add_constr(
@@ -322,12 +330,38 @@ class MAXIMIZE_CAPACITATED_COVERAGE:
             self.model.add_constr(
                 -1 + epsilon + mip.xsum(z[i, j] for i in range(I)) <= bigM * x[j]
             )
-        self.model.objective = mip.maximize(mip.xsum(y[i] for i in range(I)))
-        self.model.start = [(z[i, j], 1.0) for (i, j) in initial_solution]
-        self.model.max_mip_gap = 0.1
+
+        # maxLoad >= z_ij
+        for j in range(J):
+            self.model.add_constr(mip.xsum(z[i, j] for i in range(I)) <= maxLoad)
+
+        # -bigM - z_ij + bigM * x_j <= minLoad
+        for j in range(J):
+            self.model.add_constr(
+                -bigM + bigM * x[j] - mip.xsum(z[i, j] for i in range(I)) <= minLoad
+            )
+
+        load_distribution_weight = self.config.load_distribution_weight
+        maximum_coverage_weight = self.config.maximum_coverage_weight
+        total_distance_weight = self.config.total_distance_weight
+
+        # objective function: minimize the distance + maximize coverage + minimize difference between max facility and min facility allocation
+        # note that minLoad  takes on a negative value, and hence (maxLoad + minLoad) in the milp model objective
+        self.model.objective = mip.minimize(
+            (maxLoad + minLoad) * load_distribution_weight
+            + mip.xsum(-y[i] * maximum_coverage_weight for i in range(I))
+            + mip.xsum(
+                Dist[i, j] * z[i, j] * total_distance_weight
+                for i in range(I)
+                for j in range(J)
+            )
+        )
+
+        self.model.start = [(z[i, j], 1.0) for (i, j) in initialSolution]
+        self.model.max_gap = 0.1
 
     def optimize(self, max_seconds=200):
-        """Optimize Maximize Capacitated Coverage Problem.
+        """Optimize Maximize Coverage Minimize Cost Problem.
 
         Parameters
         ----------
@@ -355,9 +389,6 @@ class MAXIMIZE_CAPACITATED_COVERAGE:
                     if site_ix not in solution:
                         solution[site_ix] = []
                     solution[site_ix].append(point_ix)
-                    print(v.name, " ", v.x)
-                if v.name[0] == "x" and v.x == 1:
-                    print(v.name, " ", v.x)
 
         self.result = RESULT(float(time.time() - start), solution)
         return self

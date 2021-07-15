@@ -6,16 +6,15 @@ from scipy.spatial import distance_matrix
 import numpy as np
 from mip import OptimizationStatus
 
-from location_allocation import MAXIMIZE_COVERAGE
-from location_allocation import maximize_coverage
+from location_allocation import MAXIMIZE_COVERAGE, maximize_coverage
 
 
-def test_maximize_coverage_near(demand, mclp_facilities):
+def test_maximize_coverage_near(demand, facilities):
 
-    cost_matrix = distance_matrix(demand, mclp_facilities)
+    cost_matrix = distance_matrix(demand, facilities)
 
     mclp = MAXIMIZE_COVERAGE(
-        demand, mclp_facilities, cost_matrix, facilities_to_choose=2, cost_cutoff=1
+        demand, facilities, cost_matrix, facilities_to_choose=2, cost_cutoff=1
     ).optimize()
 
     assert len(mclp.result.opt_facilities) == 2
@@ -24,12 +23,12 @@ def test_maximize_coverage_near(demand, mclp_facilities):
     assert mclp.model.status == OptimizationStatus.OPTIMAL
 
 
-def test_maximize_coverage_far(demand, mclp_facilities):
+def test_maximize_coverage_far(demand, facilities):
 
-    cost_matrix = distance_matrix(demand, mclp_facilities)
+    cost_matrix = distance_matrix(demand, facilities)
 
     mclp = MAXIMIZE_COVERAGE(
-        demand, mclp_facilities, cost_matrix, facilities_to_choose=2, cost_cutoff=5
+        demand, facilities, cost_matrix, facilities_to_choose=2, cost_cutoff=5
     ).optimize()
 
     assert len(mclp.result.opt_facilities) == 2
@@ -38,12 +37,12 @@ def test_maximize_coverage_far(demand, mclp_facilities):
     assert mclp.model.status == OptimizationStatus.OPTIMAL
 
 
-def test_maximize_coverage_fnc_near(demand, mclp_facilities):
+def test_maximize_coverage_fnc_near(demand, facilities):
 
-    cost_matrix = distance_matrix(demand, mclp_facilities)
+    cost_matrix = distance_matrix(demand, facilities)
 
     model, result = maximize_coverage(
-        demand, mclp_facilities, cost_matrix, facilities_to_choose=2, cost_cutoff=1
+        demand, facilities, cost_matrix, facilities_to_choose=2, cost_cutoff=1
     )
 
     assert len(result.opt_facilities) == 2
@@ -52,12 +51,12 @@ def test_maximize_coverage_fnc_near(demand, mclp_facilities):
     assert model.status == OptimizationStatus.OPTIMAL
 
 
-def test_maximize_coverage_fnc_far(demand, mclp_facilities):
+def test_maximize_coverage_fnc_far(demand, facilities):
 
-    cost_matrix = distance_matrix(demand, mclp_facilities)
+    cost_matrix = distance_matrix(demand, facilities)
 
     model, result = maximize_coverage(
-        demand, mclp_facilities, cost_matrix, facilities_to_choose=2, cost_cutoff=5
+        demand, facilities, cost_matrix, facilities_to_choose=2, cost_cutoff=5
     )
 
     assert len(result.opt_facilities) == 2

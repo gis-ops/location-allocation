@@ -1,5 +1,41 @@
 from matplotlib import pyplot as plt
 from itertools import cycle
+import numpy as np
+from scipy.spatial import ConvexHull
+from shapely.geometry import Polygon, Point
+import random
+
+
+def generate_facility_capacities(M):
+
+    capacities = []
+    while len(capacities) < M:
+        random_capacity = random.randint(M * 0.5, M * 1.8)
+        capacities.append(random_capacity)
+    return np.array(capacities)
+
+
+def generate_candidate_facilities(points, M=100):
+    """
+    Generate M candidate sites with the convex hull of a point set
+    Input:
+        points: a Numpy array with shape of (N,2)
+        M: the number of candidate sites to generate
+    Return:
+        sites: a Numpy array with shape of (M,2)
+    """
+    hull = ConvexHull(points)
+    polygon_points = points[hull.vertices]
+    poly = Polygon(polygon_points)
+    min_x, min_y, max_x, max_y = poly.bounds
+    sites = []
+    while len(sites) < M:
+        random_point = Point(
+            [np.random.uniform(min_x, max_x), np.random.uniform(min_y, max_y)]
+        )
+        if random_point.within(poly):
+            sites.append(random_point)
+    return np.array([(p.x, p.y) for p in sites])
 
 
 def plot_result(points, point_allocations, opt_sites):

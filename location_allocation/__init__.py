@@ -3,6 +3,10 @@ from ._maximize_capacitated_coverage import (
     maximize_capacitated_coverage,
     MAXIMIZE_CAPACITATED_COVERAGE,
 )
+from ._maximize_coverage_minimize_cost import (
+    maximize_coverage_minimize_cost,
+    MAXIMIZE_COVERAGE_MINIMIZE_COST,
+)
 
 __version__ = "0.1.0"
 """
@@ -14,4 +18,6 @@ __all__ = [
     "maximize_coverage",
     "MAXIMIZE_CAPACITATED_COVERAGE",
     "maximize_capacitated_coverage",
+    "MAXIMIZE_COVERAGE_MINIMIZE_COST",
+    "maximize_coverage_minimize_cost",
 ]

@@ -2,12 +2,20 @@
 """
 Maximum coverage location problem (MCLP) solved with Mixed Integer Programming.
 Inspired by https://github.com/cyang-kth/maximum-coverage-location
+
+The result of this computation is a subset of candidate facilities such 
+that as many demand points as possible are allocated to these within the cost cutoff value.
+
+- Demand points exceeding the facilities cost cutoffs are not considered in the computation
+- Demand points within the cost cutoff of one candidate facility has all its weight allocated to it
+- Demand points within he cost cutoff of two or more facilities has all its demand weight 
+allocated to the nearest facility only
 """
 
 # Author: Can Yang <cyang@kth.se>
 #         GIS-OPS UG <enquiry@gis-ops.com>
 #
-# License: MIT License
+# License: LGPL License
 
 import numpy as np
 from mip import *
@@ -46,14 +54,14 @@ def maximize_coverage(
     ----------
 
     points : ndarray
-        Numpy array of shape (points, 2).
+        Numpy array of shape (n_points, 2).
     facilities : ndarray
-        Numpy array of shape (facilities, 2).
+        Numpy array of shape (n_facilities, 2).
     cost_matrix : ndarray
-        Numpy array of shape (points, facilities, 2).
+        Numpy array of shape (n_points, n_facilities).
         The distance matrix of points to facilities.
     facilities_to_choose : int
-        The amount of facilites to choose, must be lesser equal len(facilities).
+        The amount of facilites to choose, must be lesser equal n_facilities.
     cost_cutoff : int
         Cost cutoff which can be used to exclude points from the distance matrix which
         feature a greater cost.
@@ -95,14 +103,14 @@ def maximize_coverage(
 class MAXIMIZE_COVERAGE:
     """
     points : ndarray
-        Numpy array of shape (points, 2).
+        Numpy array of shape (n_points, 2).
     facilities : ndarray
-        Numpy array of shape (facilities, 2).
+        Numpy array of shape (n_facilities, 2).
     cost_matrix : ndarray
-        Numpy array of shape (points, facilities, 2).
+        Numpy array of shape (n_points, n_facilities).
         The distance matrix of points to facilities.
     facilities_to_choose : int
-        The amount of facilites to choose, must be lesser equal len(facilities).
+        The amount of facilites to choose, must be lesser equal n_facilities.
     cost_cutoff : int
         Cost cutoff which can be used to exclude points from the distance matrix which
         feature a greater cost.

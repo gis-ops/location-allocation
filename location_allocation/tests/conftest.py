@@ -35,20 +35,28 @@ def demand():
         (len(dense_bottom_xvalues) * len(dense_bottom_yvalues), 2)
     )
 
-    coordinates = np.concatenate(
+    demand = np.concatenate(
         [sparse_coordinates, dense_top_coordinates, dense_bottom_coordinates]
     )
     # x, y = coordinates.T
     # plt.plot(x, y, marker=".", color="k", linestyle="none")
     # plt.show()
 
-    return coordinates
+    return demand
 
 
 @pytest.fixture
-def mclp_facilities():
-    """ Creates dummy faciltilies data """
+def facilities():
+    """ Creates dummy faciltilies data"""
 
-    coordinates = np.array([[-1, 2], [1, 2], [1, 0], [-1, 0]])
+    facilities = np.array([[-1, 2], [1, 2], [1, 0], [-1, 0]])
 
-    return coordinates
+    return facilities
+
+
+@pytest.fixture
+def capacities():
+    """ Creates dummy faciltilies capacities data"""
+    capacities = np.array([15, 15, 5, 5])
+
+    return capacities
