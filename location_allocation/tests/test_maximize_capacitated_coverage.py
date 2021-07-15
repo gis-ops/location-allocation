@@ -77,18 +77,19 @@ def test_maximize_capacitated_coverage_fnc_full(demand, facilities, capacities):
     )
 
     assert model.status == OptimizationStatus.OPTIMAL
-    assert model.objective_value == 30
     opt_facilities = facilities[list(result.solution.keys())]
     assert np.alltrue(opt_facilities[0] == [-1, 2])
     assert np.alltrue(opt_facilities[1] == [1, 2])
 
     # for debugging
+    print("objective value: ", model.objective_value)
     for v in model.vars:
         if v.name[0] == "z" and v.x == 1:
             print(v.name, " ", v.x)
         if v.name[0] == "x" and v.x == 1:
             print(v.name, " ", v.x)
 
+    assert model.objective_value == 30
     for k, v in result.solution.items():
         assert len(v) == 15
 
