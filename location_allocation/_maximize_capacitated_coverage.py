@@ -355,9 +355,6 @@ class MAXIMIZE_CAPACITATED_COVERAGE:
                     if site_ix not in solution:
                         solution[site_ix] = []
                     solution[site_ix].append(point_ix)
-                    print(v.name, " ", v.x)
-                if v.name[0] == "x" and v.x == 1:
-                    print(v.name, " ", v.x)
 
         self.result = RESULT(float(time.time() - start), solution)
         return self

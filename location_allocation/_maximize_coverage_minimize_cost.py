@@ -176,6 +176,8 @@ class MAXIMIZE_COVERAGE_MINIMIZE_COST:
     """Solve Maximum coverage minimum cost coverage location problem with MIP.
 
     TODO
+    objective is to minimize total distance + maximize coverage + minimize difference between the maximum facility load and minimum facility load.
+
     Given an arbitrary amount of demand [points], find a subset [facilities_to_choose]
     of [facilities] within the [cost_cutoff] and cover as many points as possible.
 
