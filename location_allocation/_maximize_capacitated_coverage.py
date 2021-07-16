@@ -23,29 +23,13 @@ from mip import *
 import time
 import random
 
+from .common import CONFIG
+
 
 class RESULT:
     def __init__(self, time_elapsed, solution):
         self.time_elapsed = time_elapsed
         self.solution = solution
-
-
-class CONFIG:
-    def __init__(
-        self,
-        points,
-        facilities,
-        facilities_capacities,
-        cost_matrix,
-        facilities_to_choose,
-        cost_cutoff,
-    ):
-        self.points = points
-        self.facilities = facilities
-        self.facilities_capacities = facilities_capacities
-        self.facilities_to_choose = facilities_to_choose
-        self.cost_matrix = cost_matrix
-        self.cost_cutoff = cost_cutoff
 
 
 def generate_initial_solution(D, I, J, C, K):
@@ -109,13 +93,7 @@ def generate_initial_solution(D, I, J, C, K):
 
 
 def maximize_capacitated_coverage(
-    points,
-    facilities,
-    facilities_capacities,
-    cost_matrix,
-    facilities_to_choose,
-    cost_cutoff,
-    max_seconds=200,
+    points, facilities, cost_matrix, cost_cutoff, max_seconds=200, **kwargs
 ):
     """Solve Maximum capacitated coverage location problem with MIP.
 
@@ -130,6 +108,7 @@ def maximize_capacitated_coverage(
         Numpy array of shape (n_facilities, 2).
     facilities_capacities : ndarray
         Numpy array of shape (n_facilities_capacities, ).
+
         Must be the same length as facilities with capacities as integers.
     cost_matrix : ndarray
         Numpy array of shape (n_points, n_facilities).
@@ -160,10 +139,9 @@ def maximize_capacitated_coverage(
     mcclp = MAXIMIZE_CAPACITATED_COVERAGE(
         points=points,
         facilities=facilities,
-        facilities_capacities=facilities_capacities,
         cost_matrix=cost_matrix,
-        facilities_to_choose=facilities_to_choose,
         cost_cutoff=cost_cutoff,
+        **kwargs
     )
     mcclp.optimize(max_seconds=max_seconds)
     return mcclp.model, mcclp.result
@@ -235,23 +213,15 @@ class MAXIMIZE_CAPACITATED_COVERAGE:
        [ 2.5, -2.5]])
     """
 
-    def __init__(
-        self,
-        points,
-        facilities,
-        facilities_capacities,
-        cost_matrix,
-        facilities_to_choose,
-        cost_cutoff,
-    ):
+    def __init__(self, points, facilities, cost_matrix, cost_cutoff, **kwargs):
 
         self.config = CONFIG(
+            self.__class__.__name__,
             points,
             facilities,
-            facilities_capacities,
             cost_matrix,
-            facilities_to_choose,
             cost_cutoff,
+            **kwargs
         )
 
         I = self.config.points.shape[0]
@@ -281,7 +251,7 @@ class MAXIMIZE_CAPACITATED_COVERAGE:
             self.config.cost_matrix,
             I,
             J,
-            self.config.facilities_capacities,
+            self.config.capacities,
             self.config.facilities_to_choose,
         )
 
@@ -308,8 +278,7 @@ class MAXIMIZE_CAPACITATED_COVERAGE:
         # the number of points allocated to facility must not exceed facility capacity
         for j in range(J):
             self.model.add_constr(
-                mip.xsum(z[i, j] for i in range(I))
-                <= self.config.facilities_capacities[j]
+                mip.xsum(z[i, j] for i in range(I)) <= self.config.capacities[j]
             )
 
         # if at least one point is allocated to facility, the facility must be considered as allocated: for all j \in J sum(z_ij) >= 1 TRUEIFF xj = true
@@ -324,7 +293,8 @@ class MAXIMIZE_CAPACITATED_COVERAGE:
             )
         self.model.objective = mip.maximize(mip.xsum(y[i] for i in range(I)))
         self.model.start = [(z[i, j], 1.0) for (i, j) in initial_solution]
-        self.model.max_mip_gap = 0.1
+
+        self.model.max_mip_gap = self.config.max_gap
 
     def optimize(self, max_seconds=200):
         """Optimize Maximize Capacitated Coverage Problem.

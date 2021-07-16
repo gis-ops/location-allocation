@@ -21,6 +21,8 @@ import numpy as np
 from mip import *
 import time
 
+from .common import CONFIG
+
 
 class RESULT:
     def __init__(self, time_elapsed, opt_facilities, opt_facilities_indexes):
@@ -29,24 +31,8 @@ class RESULT:
         self.opt_facilities_indexes = opt_facilities_indexes
 
 
-class CONFIG:
-    def __init__(
-        self, points, facilities, cost_matrix, facilities_to_choose, cost_cutoff
-    ):
-        self.points = points
-        self.facilities = facilities
-        self.facilities_to_choose = facilities_to_choose
-        self.cost_matrix = cost_matrix
-        self.cost_cutoff = cost_cutoff
-
-
 def maximize_coverage(
-    points,
-    facilities,
-    cost_matrix,
-    facilities_to_choose,
-    cost_cutoff,
-    max_seconds=200,
+    points, facilities, cost_matrix, cost_cutoff, max_seconds=200, **kwargs
 ):
     """Solve Maximum coverage location problem with MIP.
 
@@ -93,8 +79,8 @@ def maximize_coverage(
         points=points,
         facilities=facilities,
         cost_matrix=cost_matrix,
-        facilities_to_choose=facilities_to_choose,
         cost_cutoff=cost_cutoff,
+        **kwargs
     )
     mclp.optimize(max_seconds=max_seconds)
     return mclp.model, mclp.result
@@ -148,17 +134,15 @@ class MAXIMIZE_COVERAGE:
        [ 2.5, -2.5]])
     """
 
-    def __init__(
-        self,
-        points,
-        facilities,
-        cost_matrix,
-        facilities_to_choose,
-        cost_cutoff,
-    ):
+    def __init__(self, points, facilities, cost_matrix, cost_cutoff, **kwargs):
 
         self.config = CONFIG(
-            points, facilities, cost_matrix, facilities_to_choose, cost_cutoff
+            self.__class__.__name__,
+            points,
+            facilities,
+            cost_matrix,
+            cost_cutoff,
+            **kwargs
         )
 
         I = self.config.points.shape[0]

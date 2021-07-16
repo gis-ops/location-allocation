@@ -22,31 +22,13 @@ from mip import *
 import time
 import random
 
+from .common import CONFIG
+
 
 class RESULT:
     def __init__(self, time_elapsed, solution):
         self.time_elapsed = time_elapsed
         self.solution = solution
-
-
-class CONFIG:
-    def __init__(
-        self,
-        points,
-        facilities,
-        cost_matrix,
-        max_facilities,
-        cost_cutoff,
-        facility_minimisation_weight,
-        coverage_maximisation_weight,
-    ):
-        self.points = points
-        self.facilities = facilities
-        self.max_facilities = max_facilities
-        self.cost_matrix = cost_matrix
-        self.cost_cutoff = cost_cutoff
-        self.facility_minimisation_weight = facility_minimisation_weight
-        self.coverage_maximisation_weight = coverage_maximisation_weight
 
 
 def generate_initial_solution(D, I, J, K):
@@ -98,14 +80,7 @@ def generate_initial_solution(D, I, J, K):
 
 
 def maximize_coverage_minimize_facilities(
-    points,
-    facilities,
-    cost_matrix,
-    max_facilities,
-    cost_cutoff,
-    facility_minimisation_weight=10,
-    coverage_maximisation_weight=1,
-    max_seconds=200,
+    points, facilities, cost_matrix, cost_cutoff, max_seconds=200, **kwargs
 ):
     """Solve Maximum capacitated coverage location problem with MIP.
 
@@ -149,10 +124,8 @@ def maximize_coverage_minimize_facilities(
         points=points,
         facilities=facilities,
         cost_matrix=cost_matrix,
-        max_facilities=max_facilities,
         cost_cutoff=cost_cutoff,
-        facility_minimisation_weight=facility_minimisation_weight,
-        coverage_maximisation_weight=coverage_maximisation_weight,
+        **kwargs
     )
     mcmflp.optimize(max_seconds=max_seconds)
     return mcmflp.model, mcmflp.result
@@ -234,25 +207,15 @@ class MAXIMIZE_COVERAGE_MINIMIZE_FACILITIES:
        [ 2.5, -2.5]])
     """
 
-    def __init__(
-        self,
-        points,
-        facilities,
-        cost_matrix,
-        max_facilities,
-        cost_cutoff,
-        facility_minimisation_weight=10,
-        coverage_maximisation_weight=1,
-    ):
+    def __init__(self, points, facilities, cost_matrix, cost_cutoff, **kwargs):
 
         self.config = CONFIG(
+            self.__class__.__name__,
             points,
             facilities,
             cost_matrix,
-            max_facilities,
             cost_cutoff,
-            facility_minimisation_weight,
-            coverage_maximisation_weight,
+            **kwargs
         )
 
         I = self.config.points.shape[0]
@@ -320,9 +283,9 @@ class MAXIMIZE_COVERAGE_MINIMIZE_FACILITIES:
         )
 
         self.model.start = [(z[i, j], 1.0) for (i, j) in initialSolution]
-        
+
         # Ask Una
-        self.model.max_gap = 0.1
+        self.model.max_mip_gap = self.config.max_gap
 
     def optimize(self, max_seconds=200):
         """Optimize Maximize Coverage Minimize Cost Problem.
@@ -339,13 +302,13 @@ class MAXIMIZE_COVERAGE_MINIMIZE_FACILITIES:
         """
         start = time.time()
         self.model.optimize(max_seconds=max_seconds)
-
         solution = {}
         if (
             self.model.status == mip.OptimizationStatus.FEASIBLE
             or self.model.status == mip.OptimizationStatus.OPTIMAL
         ):
             for v in self.model.vars:
+                print(v.name, v.x)
                 if v.name[0] == "z" and v.x == 1:
                     site_point = v.name.split("_")
                     point_ix = int(site_point[0][1:])

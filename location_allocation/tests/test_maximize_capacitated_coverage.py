@@ -17,13 +17,15 @@ def test_maximize_capacitated_coverage_full(demand, facilities, capacities):
 
     cost_matrix = distance_matrix(demand, facilities)
 
+    cost_cutoff = 15
+
     mcclp = MAXIMIZE_CAPACITATED_COVERAGE(
         demand,
         facilities,
-        capacities,
         cost_matrix,
+        cost_cutoff,
+        capacities=capacities,
         facilities_to_choose=2,
-        cost_cutoff=3,
     )
     mcclp.optimize()
 
@@ -32,8 +34,8 @@ def test_maximize_capacitated_coverage_full(demand, facilities, capacities):
         assert len(v) == 15
 
     opt_facilities = facilities[list(mcclp.result.solution.keys())]
-    assert np.alltrue(opt_facilities[0] == [-1, 2])
-    assert np.alltrue(opt_facilities[1] == [1, 2])
+    assert np.alltrue(opt_facilities[0] == [-5, 10])
+    assert np.alltrue(opt_facilities[1] == [5, 10])
 
     # utils.plot_result(demand, mcclp.result.solution, opt_facilities)
 
@@ -45,10 +47,10 @@ def test_maximize_capacitated_coverage_partial(demand, facilities, capacities):
     mcclp = MAXIMIZE_CAPACITATED_COVERAGE(
         demand,
         facilities,
-        capacities,
         cost_matrix,
+        cost_cutoff=2.5,
+        capacities=capacities,
         facilities_to_choose=2,
-        cost_cutoff=0.5,
     )
     mcclp.optimize()
 
@@ -57,8 +59,8 @@ def test_maximize_capacitated_coverage_partial(demand, facilities, capacities):
         assert len(v) == 8
 
     opt_facilities = facilities[list(mcclp.result.solution.keys())]
-    assert np.alltrue(opt_facilities[0] == [-1, 2])
-    assert np.alltrue(opt_facilities[1] == [1, 2])
+    assert np.alltrue(opt_facilities[0] == [-5, 10])
+    assert np.alltrue(opt_facilities[1] == [5, 10])
 
     # utils.plot_result(demand, mcclp.result.solution, opt_facilities)
 
@@ -70,16 +72,16 @@ def test_maximize_capacitated_coverage_fnc_full(demand, facilities, capacities):
     model, result = maximize_capacitated_coverage(
         demand,
         facilities,
-        capacities,
         cost_matrix,
+        cost_cutoff=15,
+        capacities=capacities,
         facilities_to_choose=2,
-        cost_cutoff=3,
     )
 
     assert model.status == OptimizationStatus.OPTIMAL
     opt_facilities = facilities[list(result.solution.keys())]
-    assert np.alltrue(opt_facilities[0] == [-1, 2])
-    assert np.alltrue(opt_facilities[1] == [1, 2])
+    assert np.alltrue(opt_facilities[0] == [-5, 10])
+    assert np.alltrue(opt_facilities[1] == [5, 10])
 
     # for debugging
     print("objective value: ", model.objective_value)
@@ -103,10 +105,10 @@ def test_maximize_capacitated_coverage_fnc_partial(demand, facilities, capacitie
     model, result = maximize_capacitated_coverage(
         demand,
         facilities,
-        capacities,
         cost_matrix,
+        cost_cutoff=2.5,
+        capacities=capacities,
         facilities_to_choose=2,
-        cost_cutoff=0.5,
     )
 
     assert model.status == OptimizationStatus.OPTIMAL
@@ -114,7 +116,7 @@ def test_maximize_capacitated_coverage_fnc_partial(demand, facilities, capacitie
         assert len(v) == 8
 
     opt_facilities = facilities[list(result.solution.keys())]
-    assert np.alltrue(opt_facilities[0] == [-1, 2])
-    assert np.alltrue(opt_facilities[1] == [1, 2])
+    assert np.alltrue(opt_facilities[0] == [-5, 10])
+    assert np.alltrue(opt_facilities[1] == [5, 10])
 
     # utils.plot_result(demand, mcclp.result.solution, opt_facilities)
