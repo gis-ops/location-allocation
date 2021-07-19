@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-Maximum capicitated coverage location problem (MCCLP) solved with Mixed Integer Programming.
+Maximum coverage location problem and thereby minimizing cost solved with Mixed Integer Programming.
 
+Summary: (Una Help)
 The result of this computation is a subset of candidate facilities such 
 that as many demand points as possible are allocated to these within the cost cutoff value
-and considering the capacity of the facility itself.
+and thereby minimizing the distance of these demand points. 
 
+Problem Objective: (Una Help)
+...
+
+Notes: (Una help)
 - Demand points exceeding the facilities cost cutoffs are not considered in the computation
 - Demand points within the cost cutoff of one candidate facility has all its weight allocated to it
 - If the total demand of a facility is greater than the capacity of the facility, 
@@ -16,14 +21,16 @@ allocated to the nearest facility only (double check)
 
 # Author: GIS-OPS UG <enquiry@gis-ops.com>
 #
-# License: LGPL License
+# License: GPL License
 
 import numpy as np
 from mip import *
 import time
 import random
-
+import logging
 from .common import CONFIG
+
+logger = logging.getLogger("la")
 
 
 class RESULT:
@@ -84,9 +91,11 @@ def generate_initial_solution(D, I, J, K):
 
         if assigned_facilities == K or number_of_trials > max_number_of_trials:
             if number_of_trials > max_number_of_trials:
-                print("Feasible solution not found, return least infeasible solution")
+                logger.debug(
+                    "Feasible solution not found, return least infeasible solution"
+                )
             else:
-                print("Feasible solution found")
+                logger.debug("Feasible solution found")
             return best_solution
 
 
@@ -94,9 +103,6 @@ def maximize_coverage_minimize_cost(
     points, facilities, cost_matrix, cost_cutoff, max_seconds=200, **kwargs
 ):
     """Solve Maximum capacitated coverage location problem with MIP.
-
-    Given an arbitrary amount of demand [points], find a subset [facilities_to_choose]
-    of [facilities] given a certain [capacities] within the [cost_cutoff] and cover as many points as possible.
 
     Parameters
     ----------
@@ -112,6 +118,12 @@ def maximize_coverage_minimize_cost(
     cost_cutoff : int
         Cost cutoff which can be used to exclude points from the distance matrix which
         feature a greater cost.
+    load_distribution_weight : int, default=10
+        Una Help
+    maximum_coverage_weight : int, default=100
+        Una Help
+    total_distance_weight : int, default=1
+        Una Help
     max_seconds : int, default=200
         The maximum amount of seconds given to the solver.
 
@@ -119,14 +131,14 @@ def maximize_coverage_minimize_cost(
     -------
     model : <mip.model.Model>
         MIP Model class documented here https://docs.python-mip.com/en/latest/classes.html
-    result : <location_allocation._maximize_coverage.RESULT>
+    result : <location_allocation._maximize_coverage_minimize_cost.RESULT>
         A result object containing the optimal facilities coordinates (opt_facilities)
         and elapsed time in seconds (time_elapsed).
 
     Notes
     -----
-    For an example, see :ref:`examples/maximize_coverage.py
-    <sphx_glr_auto_examples_maximize_coverage.py>`.
+    For an example, see :ref:`examples/maximize_coverage_minimize_cost.py
+    <sphx_glr_auto_examples_maximize_coverage_minimize_cost.py>`.
 
     """
 
@@ -144,19 +156,6 @@ def maximize_coverage_minimize_cost(
 class MAXIMIZE_COVERAGE_MINIMIZE_COST:
     """Solve Maximum coverage minimum cost coverage location problem with MIP.
 
-    TODO
-    objective is to minimize total distance + maximize coverage + minimize difference between the maximum facility load and minimum facility load.
-
-    Given an arbitrary amount of demand [points], find a subset [facilities_to_choose]
-    of [facilities] within the [cost_cutoff] and cover as many points as possible.
-
-    we are minimising the weighted sum of all the objective terms,
-    e.g., w1 * total_obj1 + w2 * total_obj2 + w3 * total_obj3 = problem_objective
-
-    but if you increase it to a very high value (higher than the one for maximum coverage), you would end up
-    with 0 points assigned (as this would then lead to 0 distance) there is a tradeoff between the
-    three objectives, and the user needs to find the right balance
-
     Parameters
     ----------
     points : ndarray
@@ -166,54 +165,17 @@ class MAXIMIZE_COVERAGE_MINIMIZE_COST:
     cost_matrix : ndarray
         Numpy array of shape (n_points, n_facilities).
         The distance matrix of points to facilities.
-    facilities_to_choose : int
-        The amount of facilites to choose, must be lesser equal n_facilities.
+    max_facilities : int
+        The maximum amount of facilities, must be lesser equal n_facilities.
     cost_cutoff : int
         Cost cutoff which can be used to exclude points from the distance matrix which
         feature a greater cost.
     load_distribution_weight : int, default=10
-        Ask Una
+        Una Help
     maximum_coverage_weight : int, default=100
-        Ask Una
+        Una Help
     total_distance_weight : int, default=1
-        Ask Una
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> from scipy.spatial import distance_matrix
-    >>> from location_allocation import MAXIMIZE_CAPACITATED_COVERAGE
-    >>> xvalues = np.array([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5])
-    >>> yvalues = np.array([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5])
-    >>> xv, yv = np.meshgrid(xvalues, yvalues)
-    >>> demand = np.dstack((xv, yv)).reshape((np.power(len(xvalues), 2), 2))
-    >>> facilities = np.array(
-        [
-            [-10, 10],
-            [10, 10],
-            [10, -10],
-            [-10, -10],
-            [-2.5, 2.5],
-            [2.5, 2.5],
-            [2.5, -2.5],
-            [-2.5, -2.5],
-        ]
-    )
-    >>> cost_matrix = distance_matrix(demand, facilities)
-    >>> mcclp = MAXIMIZE_COVERAGE_MINIMIZE_COST(
-        demand,
-        facilities,
-        cost_matrix,
-        facilities_to_choose=2,
-        cost_cutoff=4
-    )
-    >>> mcclp.optimize()
-    >>> mcclp.result.solution
-    {7: [5, 11, 24, 25, 26, 28, 33, 34, 35, 36, 37, 38, 39, 44, 60], 6: [6, 17, 21, 27, 29, 30, 31, 32, 40, 41, 42, 43, 48, 51, 72]}
-    >>> opt_facilities = facilities[list(mcclp.result.solution.keys())]
-    >>> opt_facilities
-    array([[-2.5, -2.5],
-       [ 2.5, -2.5]])
+        Una Help
     """
 
     def __init__(self, points, facilities, cost_matrix, cost_cutoff, **kwargs):
@@ -330,7 +292,8 @@ class MAXIMIZE_COVERAGE_MINIMIZE_COST:
         Returns
         -------
         self : object
-            Returns an instance of self.
+            Returns an instance of self consisting of the configuration,
+            mip model and points to facility allocations.
         """
         start = time.time()
         self.model.optimize(max_seconds=max_seconds)

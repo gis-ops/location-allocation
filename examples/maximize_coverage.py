@@ -10,7 +10,11 @@ facilities = utils.generate_candidate_facilities(points, 50)
 cost_matrix = distance_matrix(points, facilities)
 
 mclp = MAXIMIZE_COVERAGE(
-    points, facilities, cost_matrix, facilities_to_choose=5, cost_cutoff=0.2
+    points,
+    facilities,
+    cost_matrix,
+    cost_cutoff=0.2,
+    facilities_to_choose=5,
 )
 mclp.optimize()
 print(mclp.result.opt_facilities)

@@ -4,6 +4,7 @@ import numpy as np
 from scipy.spatial import ConvexHull
 from shapely.geometry import Polygon, Point
 import random
+import logging
 
 
 def generate_facility_capacities(M):
@@ -74,3 +75,23 @@ def plot_result(points, point_allocations, opt_sites):
         labelbottom=False,
     )
     plt.show()
+
+
+def custom_logger(name, debug, report=False):
+    formatter = logging.Formatter(
+        fmt="%(asctime)s - %(levelname)s - %(module)s - %(message)s"
+    )
+    handler = logging.StreamHandler()
+    handler.setFormatter(formatter)
+
+    logger = logging.getLogger(name)
+    if debug:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
+    logger.addHandler(handler)
+
+    if report:
+        logger.addHandler(logging.FileHandler("log.txt", mode="w"))
+
+    return logger

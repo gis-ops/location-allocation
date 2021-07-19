@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-Maximum capicitated coverage location problem (MCCLP) solved with Mixed Integer Programming.
+Maximum capicitated coverage location problem solved with Mixed Integer Programming.
 
+Summary: (Una Help)
 The result of this computation is a subset of candidate facilities such 
 that as many demand points as possible are allocated to these within the cost cutoff value
 and considering the capacity of the facility itself.
 
+Problem Objective: (Una Help)
+...
+
+Notes: (Una help)
 - Demand points exceeding the facilities cost cutoffs are not considered in the computation
 - Demand points within the cost cutoff of one candidate facility has all its weight allocated to it
 - If the total demand of a facility is greater than the capacity of the facility, 
@@ -16,14 +21,17 @@ allocated to the nearest facility only (double check)
 
 # Author: GIS-OPS UG <enquiry@gis-ops.com>
 #
-# License: LGPL License
+# License: GPL License
 
 import numpy as np
 from mip import *
 import time
 import random
+import logging
 
 from .common import CONFIG
+
+logger = logging.getLogger("la")
 
 
 class RESULT:
@@ -86,19 +94,18 @@ def generate_initial_solution(D, I, J, C, K):
 
         if assigned_facilities == K or number_of_trials > max_number_of_trials:
             if number_of_trials > max_number_of_trials:
-                print("Feasible solution not found, return least infeasible solution")
+                logger.debug(
+                    "Feasible solution not found, return least infeasible solution"
+                )
             else:
-                print("Feasible solution found")
+                logger.debug("Feasible solution found")
             return best_solution
 
 
-def maximize_capacitated_coverage(
+def maximize_coverage_capacitated(
     points, facilities, cost_matrix, cost_cutoff, max_seconds=200, **kwargs
 ):
-    """Solve Maximum capacitated coverage location problem with MIP.
-
-    Given an arbitrary amount of demand [points], find a subset [facilities_to_choose]
-    of [facilities] given a certain [capacities] within the [cost_cutoff] and cover as many points as possible.
+    """Solve Maximum capacitated coverage location problem.
 
     Parameters
     ----------
@@ -106,9 +113,8 @@ def maximize_capacitated_coverage(
         Numpy array of shape (n_points, 2).
     facilities : ndarray
         Numpy array of shape (n_facilities, 2).
-    facilities_capacities : ndarray
+    capacities : ndarray
         Numpy array of shape (n_facilities_capacities, ).
-
         Must be the same length as facilities with capacities as integers.
     cost_matrix : ndarray
         Numpy array of shape (n_points, n_facilities).
@@ -125,18 +131,18 @@ def maximize_capacitated_coverage(
     -------
     model : <mip.model.Model>
         MIP Model class documented here https://docs.python-mip.com/en/latest/classes.html
-    result : <location_allocation._maximize_coverage.RESULT>
+    result : <location_allocation._maximize_coverage_capacitated.RESULT>
         A result object containing the optimal facilities coordinates (opt_facilities)
         and elapsed time in seconds (time_elapsed).
 
     Notes
     -----
-    For an example, see :ref:`examples/maximize_coverage.py
-    <sphx_glr_auto_examples_maximize_coverage.py>`.
+    For an example, see :ref:`examples/maximize_coverage_capacitated.py
+    <sphx_glr_auto_examples_maximize_coverage_capacitated.py>`.
 
     """
 
-    mcclp = MAXIMIZE_CAPACITATED_COVERAGE(
+    mcclp = MAXIMIZE_COVERAGE_CAPACITATED(
         points=points,
         facilities=facilities,
         cost_matrix=cost_matrix,
@@ -147,11 +153,8 @@ def maximize_capacitated_coverage(
     return mcclp.model, mcclp.result
 
 
-class MAXIMIZE_CAPACITATED_COVERAGE:
+class MAXIMIZE_COVERAGE_CAPACITATED:
     """Solve Maximum capacitated coverage location problem with MIP.
-
-    Given an arbitrary amount of demand [points], find a subset [facilities_to_choose]
-    of [facilities] within the [cost_cutoff] and cover as many points as possible.
 
     Parameters
     ----------
@@ -159,8 +162,8 @@ class MAXIMIZE_CAPACITATED_COVERAGE:
         Numpy array of shape (n_points, 2).
     facilities : ndarray
         Numpy array of shape (n_facilities, 2).
-    facilities_capacities : ndarray
-        Numpy array of shape (n_facilities_capacities, ).
+    capacities : ndarray
+        Numpy array of shape (n_capacities, ).
         Must be the same length as facilities with capacities as integers.
     cost_matrix : ndarray
         Numpy array of shape (n_points, n_facilities).
@@ -172,45 +175,6 @@ class MAXIMIZE_CAPACITATED_COVERAGE:
         feature a greater cost.
     max_seconds : int, default=200
         The maximum amount of seconds given to the solver.
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> from scipy.spatial import distance_matrix
-    >>> from location_allocation import MAXIMIZE_CAPACITATED_COVERAGE
-    >>> xvalues = np.array([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5])
-    >>> yvalues = np.array([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5])
-    >>> xv, yv = np.meshgrid(xvalues, yvalues)
-    >>> demand = np.dstack((xv, yv)).reshape((np.power(len(xvalues), 2), 2))
-    >>> facilities = np.array(
-        [
-            [-10, 10],
-            [10, 10],
-            [10, -10],
-            [-10, -10],
-            [-2.5, 2.5],
-            [2.5, 2.5],
-            [2.5, -2.5],
-            [-2.5, -2.5],
-        ]
-    )
-    >>> facilities_capacities = np.array([15, 15, 15, 15, 15, 15, 15, 15])
-    >>> cost_matrix = distance_matrix(demand, facilities)
-    >>> mcclp = MAXIMIZE_CAPACITATED_COVERAGE(
-        demand,
-        facilities,
-        facilities_capacities,
-        cost_matrix,
-        facilities_to_choose=2,
-        cost_cutoff=4
-    )
-    >>> mcclp.optimize()
-    >>> mcclp.result.solution
-    {7: [5, 11, 24, 25, 26, 28, 33, 34, 35, 36, 37, 38, 39, 44, 60], 6: [6, 17, 21, 27, 29, 30, 31, 32, 40, 41, 42, 43, 48, 51, 72]}
-    >>> opt_facilities = facilities[list(mcclp.result.solution.keys())]
-    >>> opt_facilities
-    array([[-2.5, -2.5],
-       [ 2.5, -2.5]])
     """
 
     def __init__(self, points, facilities, cost_matrix, cost_cutoff, **kwargs):
@@ -293,7 +257,6 @@ class MAXIMIZE_CAPACITATED_COVERAGE:
             )
         self.model.objective = mip.maximize(mip.xsum(y[i] for i in range(I)))
         self.model.start = [(z[i, j], 1.0) for (i, j) in initial_solution]
-
         self.model.max_mip_gap = self.config.max_gap
 
     def optimize(self, max_seconds=200):
@@ -307,7 +270,8 @@ class MAXIMIZE_CAPACITATED_COVERAGE:
         Returns
         -------
         self : object
-            Returns an instance of self.
+            Returns an instance of self consisting of the configuration,
+            mip model and points to facility allocations.
         """
         start = time.time()
         self.model.optimize(max_seconds=max_seconds)
