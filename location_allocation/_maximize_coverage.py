@@ -1,25 +1,23 @@
 # -*- coding: utf-8 -*-
 """
-Maximum coverage location problem (MCLP) solved with Mixed Integer Programming.
-Inspired by https://github.com/cyang-kth/maximum-coverage-location
-
-Summary: (Una Help)
+Maximize Coverage Location Problem:
 The result of this computation is a subset of candidate facilities such 
 that as many demand points as possible are allocated to these within the cost cutoff value.
+    
+Problem Objective:    
+Let K be the number of facilities to select for location coverage. 
+The problem aims to maximize the number of locations covered by at least one facility 
+from the subset of K selected facilities.
 
-Problem Objective: (Una Help)
-
-Notes: (Una Help)
-- Demand points exceeding the facilities cost cutoffs are not considered in the computation
+Notes: (Una to verify)
+- Demand points exceeding the facilities cost cutoffs are not considered
 - Demand points within the cost cutoff of one candidate facility has all its weight allocated to it
-- Demand points within he cost cutoff of two or more facilities has all its demand weight 
-allocated to the nearest facility only
-"""
+- Demand points within the cost cutoff of 2 or more facilities is allocated to the nearest facility
 
-# Author: Can Yang <cyang@kth.se>
-#         GIS-OPS UG <enquiry@gis-ops.com>
-#
-# License: GPL License
+References:
+Church, R. and C. ReVelle, "The maximal covering location problem".
+In: Papers of the Regional Science Association, pp. 101-118. 1974.
+"""
 
 import numpy as np
 from mip import *
@@ -35,78 +33,37 @@ class RESULT:
         self.opt_facilities_indexes = opt_facilities_indexes
 
 
-def maximize_coverage(
-    points, facilities, cost_matrix, cost_cutoff, max_seconds=200, **kwargs
-):
-    """Solve Maximum coverage location problem with MIP.
-
-    Parameters
-    ----------
-
-    points : ndarray
-        Numpy array of shape (n_points, 2).
-    facilities : ndarray
-        Numpy array of shape (n_facilities, 2).
-    cost_matrix : ndarray
-        Numpy array of shape (n_points, n_facilities).
-        The distance matrix of points to facilities.
-    facilities_to_choose : int
-        The amount of facilites to choose, must be lesser equal n_facilities.
-    cost_cutoff : int
-        Cost cutoff which can be used to exclude points from the distance matrix which
-        feature a greater cost.
-    max_seconds : int, default=200
-        The maximum amount of seconds given to the solver.
-
-    Returns
-    -------
-    model : <mip.model.Model>
-        MIP Model class documented at https://docs.python-mip.com/en/latest/classes.html
-    result : <location_allocation._maximize_coverage.RESULT>
-        A result object containing the optimal facilities coordinates (opt_facilities)
-        and elapsed time in seconds (time_elapsed).
-
-    Notes
-    -----
-    For an example, see :ref:`examples/maximize_coverage.py
-    <sphx_glr_auto_examples_maximize_coverage.py>`.
-
-    References
-    ----------
-    Church, R. and C. ReVelle, "The maximal covering location problem".
-    In: Papers of the Regional Science Association, pp. 101-118. 1974.
-    """
-
-    mclp = MAXIMIZE_COVERAGE(
-        points=points,
-        facilities=facilities,
-        cost_matrix=cost_matrix,
-        cost_cutoff=cost_cutoff,
-        **kwargs
-    )
-    mclp.optimize(max_seconds=max_seconds)
-    return mclp.model, mclp.result
-
-
 class MAXIMIZE_COVERAGE:
-    """
-    points : ndarray
-        Numpy array of shape (n_points, 2).
-    facilities : ndarray
-        Numpy array of shape (n_facilities, 2).
-    cost_matrix : ndarray
-        Numpy array of shape (n_points, n_facilities).
-        The distance matrix of points to facilities.
-    facilities_to_choose : int
-        The amount of facilites to choose, must be lesser equal n_facilities.
-    cost_cutoff : int
-        Cost cutoff which can be used to exclude points from the distance matrix which
-        feature a greater cost.
-    max_seconds : int, default=200
-        The maximum amount of seconds given to the solver.
-    """
+    def __init__(
+        self,
+        points,
+        facilities,
+        cost_matrix,
+        cost_cutoff,
+        facilities_to_choose,
+        max_gap=0.1,
+    ):
+        """
+        Maximum Coverage Location Problem Class
 
-    def __init__(self, points, facilities, cost_matrix, cost_cutoff, **kwargs):
+        :param points:  Numpy array of shape (n_points, 2).
+        :type points: ndarray
+        :param facilities: Numpy array of shape (n_facilities, 2).
+        :type facilities: ndarray
+        :param cost_matrix: Numpy array of shape (n_points, n_facilities).
+            The distance matrix of points to facilities.
+        :type cost_matrix: ndarray
+        :param cost_cutoff: Cost cutoff which can be used to exclude points
+            from the distance matrix which feature a greater cost.
+        :type cost_cutoff: int
+        :param facilities_to_choose: The amount of facilites to choose, 
+            must be lesser equal n_facilities.
+        :type facilities_to_choose: int
+        :param max_gap: Una Help, defaults to 0.1
+        :type max_gap: float, optional
+        
+        
+        """
 
         self.config = CONFIG(
             self.__class__.__name__,
@@ -114,7 +71,8 @@ class MAXIMIZE_COVERAGE:
             facilities,
             cost_matrix,
             cost_cutoff,
-            **kwargs
+            facilities_to_choose=facilities_to_choose,
+            max_gap=max_gap,
         )
 
         I = self.config.points.shape[0]
@@ -148,18 +106,16 @@ class MAXIMIZE_COVERAGE:
         self.model.objective = mip.maximize(mip.xsum(y[i] for i in range(I)))
 
     def optimize(self, max_seconds=200):
-        """Optimize MCLP.
+        """
+        Optimize the maximum coverage problem
 
-        Parameters
-        ----------
-        max_seconds : int
-            The maximum amount of seconds given to the solver.
-
-        Returns
-        -------
-        self : object
-            Returns an instance of self consisting of the configuration,
-            mip model and optimized facility locations.
+        :param max_seconds: The amount of time given to the solver, defaults to 200.
+        :type max_seconds: int, optional
+        :return: Returns an instance of self consisting of
+            the configuration <location_allocation.common.CONFIG>,
+            mip model <mip.model.Model> (https://docs.python-mip.com/en/latest/classes.html)
+            and optimized facility locations. <location_allocation._maximize_coverage.RESULT>.
+        :rtype: :class:`location_allocation._maximize_coverage.MAXIMIZE_COVERAGE`
         """
         start = time.time()
         self.model.optimize(max_seconds=max_seconds)

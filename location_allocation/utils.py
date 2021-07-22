@@ -1,4 +1,5 @@
 from matplotlib import pyplot as plt
+from matplotlib import colors
 from itertools import cycle
 import numpy as np
 from scipy.spatial import ConvexHull
@@ -52,7 +53,10 @@ def plot_result(points, point_allocations, opt_sites):
 
     plt.scatter(opt_sites[:, 0], opt_sites[:, 1], c="C1", s=200, marker="*")
 
-    cycol = cycle("bgrcmk")
+    mpl_colors = []
+    for name, hex in colors.cnames.items():
+        mpl_colors.append(name)
+    cycol = cycle(mpl_colors)
 
     for k, v in point_allocations.items():
         color = next(cycol)

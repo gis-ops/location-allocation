@@ -1,27 +1,28 @@
 # -*- coding: utf-8 -*-
 """
-Maximum coverage location problem and thereby minimizing cost solved with Mixed Integer Programming.
-
-Summary: (Una Help)
-The result of this computation is a subset of candidate facilities such 
+Maximum Coverage Minimizing Cost Location Problem:
+The result of this computation is a given subset of candidate facilities such 
 that as many demand points as possible are allocated to these within the cost cutoff value
 and thereby minimizing the distance of these demand points. 
 
-Problem Objective: (Una Help)
-...
+Problem Objective:
+Let K be the number of facilities to select for location coverage. The problem is to allocate 
+locations to a selection of K facilities such that: 
+    (i) the location coverage is maximized; 
+    (ii) the total distance from location to facility is minimized; and 
+    (iii) the difference between f_max and f_min is minimized, 
+    where f_max and f_min are the maximum and the minimum number of 
+    locations assigned to a facility in the given solution. 
+The objective is thus to minimize a weighted sum of the three objective terms: 
+i.e., minimize(total_distance * W1 - total_coverage * W2 + coverage_difference *W3), 
+where W1, W2 and W3 are the corresponding penalty weights. 
 
-Notes: (Una help)
-- Demand points exceeding the facilities cost cutoffs are not considered in the computation
-- Demand points within the cost cutoff of one candidate facility has all its weight allocated to it
-- If the total demand of a facility is greater than the capacity of the facility, 
-only the demand points that maximize total captured demand and minimize total weighted impedance are allocated (double check)
-- Demand points within he cost cutoff of two or more facilities has all its demand weight 
-allocated to the nearest facility only (double check)
+Notes: (Una to verify)
+- Demand points exceeding the facilities cost cutoffs are not considered.
+- Demand points within the cost cutoff of one candidate facility has all its weight allocated to it.
+- Demand points within the cost cutoff of 2 or more facilities is allocated to the nearest facility.
+- Una help: Some examples like in minimize_facilities
 """
-
-# Author: GIS-OPS UG <enquiry@gis-ops.com>
-#
-# License: GPL License
 
 import numpy as np
 from mip import *
@@ -40,23 +41,20 @@ class RESULT:
 
 
 def generate_initial_solution(D, I, J, K):
-    """Generate initial solution to use as the starting point for the milp solver.
+    """
+    Generate initial solution to use as
+    the starting point for the milp solver.
 
-    Parameters
-    ----------
-    D : ndarray
-        The distance matrix of points to facilities.
-    I : int
-        number of points I.
-    J : int
-        number of facilities.
-    K : int
-        Maximum number of facilities to allocate.
-
-    Returns
-    -------
-    solution : list
-        A list of pairs (i, j) denoting that point i is covered by facility j.
+    :param D: Numpy array of shape (n_points, n_facilities).
+    :type D: ndarray
+    :param I: n_points
+    :type I: int
+    :param J: n_facilities
+    :type J: int
+    :param K: facilities_to_choose
+    :type K: int
+    :return: a list of pairs (i, j) denoting that point i is covered by facility j
+    :rtype: list
     """
 
     Is = list(range(0, I))  # list of points
@@ -99,86 +97,45 @@ def generate_initial_solution(D, I, J, K):
             return best_solution
 
 
-def maximize_coverage_minimize_cost(
-    points, facilities, cost_matrix, cost_cutoff, max_seconds=200, **kwargs
-):
-    """Solve Maximum capacitated coverage location problem with MIP.
-
-    Parameters
-    ----------
-    points : ndarray
-        Numpy array of shape (n_points, 2).
-    facilities : ndarray
-        Numpy array of shape (n_facilities, 2).
-    cost_matrix : ndarray
-        Numpy array of shape (n_points, n_facilities).
-        The distance matrix of points to facilities.
-    facilities_to_choose : int
-        The amount of facilites to choose, must be lesser equal n_facilities.
-    cost_cutoff : int
-        Cost cutoff which can be used to exclude points from the distance matrix which
-        feature a greater cost.
-    load_distribution_weight : int, default=10
-        Una Help
-    maximum_coverage_weight : int, default=100
-        Una Help
-    total_distance_weight : int, default=1
-        Una Help
-    max_seconds : int, default=200
-        The maximum amount of seconds given to the solver.
-
-    Returns
-    -------
-    model : <mip.model.Model>
-        MIP Model class documented here https://docs.python-mip.com/en/latest/classes.html
-    result : <location_allocation._maximize_coverage_minimize_cost.RESULT>
-        A result object containing the optimal facilities coordinates (opt_facilities)
-        and elapsed time in seconds (time_elapsed).
-
-    Notes
-    -----
-    For an example, see :ref:`examples/maximize_coverage_minimize_cost.py
-    <sphx_glr_auto_examples_maximize_coverage_minimize_cost.py>`.
-
-    """
-
-    mcclp = MAXIMIZE_COVERAGE_MINIMIZE_COST(
-        points=points,
-        facilities=facilities,
-        cost_matrix=cost_matrix,
-        cost_cutoff=cost_cutoff,
-        **kwargs
-    )
-    mcclp.optimize(max_seconds=max_seconds)
-    return mcclp.model, mcclp.result
-
-
 class MAXIMIZE_COVERAGE_MINIMIZE_COST:
-    """Solve Maximum coverage minimum cost coverage location problem with MIP.
+    def __init__(
+        self,
+        points,
+        facilities,
+        cost_matrix,
+        cost_cutoff,
+        facilities_to_choose,
+        load_distribution_weight=10,
+        maximum_coverage_weight=100,
+        total_distance_weight=1,
+        max_gap=0.1,
+    ):
+        """
+        Maximum Coverage Minimum Cost Coverage Location Problem Class
 
-    Parameters
-    ----------
-    points : ndarray
-        Numpy array of shape (n_points, 2).
-    facilities : ndarray
-        Numpy array of shape (n_facilities, 2).
-    cost_matrix : ndarray
-        Numpy array of shape (n_points, n_facilities).
-        The distance matrix of points to facilities.
-    max_facilities : int
-        The maximum amount of facilities, must be lesser equal n_facilities.
-    cost_cutoff : int
-        Cost cutoff which can be used to exclude points from the distance matrix which
-        feature a greater cost.
-    load_distribution_weight : int, default=10
-        Una Help
-    maximum_coverage_weight : int, default=100
-        Una Help
-    total_distance_weight : int, default=1
-        Una Help
-    """
-
-    def __init__(self, points, facilities, cost_matrix, cost_cutoff, **kwargs):
+        :param points: Numpy array of shape (n_points, 2).
+        :type points: ndarray
+        :param facilities: Numpy array of shape (n_facilities, 2).
+        :type facilities: ndarray
+        :param cost_matrix: Numpy array of shape (n_points, n_facilities).
+            The distance matrix of points to facilities.
+        :type cost_matrix: ndarray
+        :param cost_cutoff: Cost cutoff which can be used to
+            exclude points from the distance matrix which
+            feature a greater cost.
+        :type cost_cutoff: int
+        :param facilities_to_choose: The amount of facilites to choose,
+            must be lesser equal n_facilities.
+        :type facilities_to_choose: int
+        :param load_distribution_weight: Una Help, defaults to 10
+        :type load_distribution_weight: int, optional
+        :param maximum_coverage_weight: Una Help, defaults to 100
+        :type maximum_coverage_weight: int, optional
+        :param total_distance_weight: Una Help, defaults to 1
+        :type total_distance_weight: int, optional
+        :param max_gap: Una Help, defaults to 0.1
+        :type max_gap: float, optional
+        """
 
         self.config = CONFIG(
             self.__class__.__name__,
@@ -186,7 +143,11 @@ class MAXIMIZE_COVERAGE_MINIMIZE_COST:
             facilities,
             cost_matrix,
             cost_cutoff,
-            **kwargs
+            facilities_to_choose=facilities_to_choose,
+            load_distribution_weight=load_distribution_weight,
+            maximum_coverage_weight=maximum_coverage_weight,
+            total_distance_weight=total_distance_weight,
+            max_gap=max_gap,
         )
 
         I = self.config.points.shape[0]
@@ -282,18 +243,16 @@ class MAXIMIZE_COVERAGE_MINIMIZE_COST:
         self.model.max_mip_gap = self.config.max_gap
 
     def optimize(self, max_seconds=200):
-        """Optimize Maximize Coverage Minimize Cost Problem.
+        """
+        Optimize Maximize Coverage Minimize Cost Problem
 
-        Parameters
-        ----------
-        max_seconds : int
-            The maximum amount of seconds given to the solver.
-
-        Returns
-        -------
-        self : object
-            Returns an instance of self consisting of the configuration,
-            mip model and points to facility allocations.
+        :param max_seconds: The amount of time given to the solver, defaults to 200.
+        :type max_seconds: int, optional
+        :return: Returns an instance of self consisting of
+            the configuration <location_allocation.common.CONFIG>,
+            mip model <mip.model.Model> (https://docs.python-mip.com/en/latest/classes.html)
+            and points to facility allocations <location_allocation._maximize_coverage_minimize_cost.RESULT>.
+        :rtype: :class:`location_allocation._maximize_coverage_minimize_cost.MAXIMIZE_COVERAGE_MINIMIZE_COST`
         """
         start = time.time()
         self.model.optimize(max_seconds=max_seconds)

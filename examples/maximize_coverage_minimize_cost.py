@@ -14,6 +14,7 @@ mcmclp = MAXIMIZE_COVERAGE_MINIMIZE_COST(
     cost_matrix,
     cost_cutoff=0.2,
     facilities_to_choose=3,
+    max_gap=0.1
 )
 mcmclp.optimize()
 
