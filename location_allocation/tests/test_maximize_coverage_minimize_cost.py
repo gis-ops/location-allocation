@@ -1,15 +1,9 @@
-"""
-Tests for maximize coverage algorithm
-"""
-
-from scipy.spatial import distance_matrix
+# flake8: noqa
 import numpy as np
 from mip import OptimizationStatus
+from scipy.spatial import distance_matrix
 
-from location_allocation import (
-    MAXIMIZE_COVERAGE_MINIMIZE_COST,
-    utils,
-)
+from location_allocation import MAXIMIZE_COVERAGE_MINIMIZE_COST, utils
 
 
 def test_maximize_coverage_minimize_cost_near(demand, facilities):
@@ -60,3 +54,11 @@ def test_maximize_coverage_minimize_cost_far(demand, facilities):
     assert np.alltrue(opt_facilities[0] == [5, 0])
     assert np.alltrue(opt_facilities[1] == [-5, 10])
     # utils.plot_result(demand, mcmclp.result.solution, opt_facilities)
+
+
+# objective function:
+# minimize the distance + maximize coverage + minimize difference between max facility and min facility allocation
+
+# load_distribution_weight=10,
+# maximum_coverage_weight=100,
+# total_distance_weight=1,

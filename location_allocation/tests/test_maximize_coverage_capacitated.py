@@ -1,15 +1,9 @@
-"""
-Tests for maximize capacitated coverage algorithm
-"""
-
-from scipy.spatial import distance_matrix
-from mip import OptimizationStatus
+# flake8: noqa
 import numpy as np
+from mip import OptimizationStatus
+from scipy.spatial import distance_matrix
 
-from location_allocation import (
-    MAXIMIZE_COVERAGE_CAPACITATED,
-    utils,
-)
+from location_allocation import MAXIMIZE_COVERAGE_CAPACITATED, utils
 
 
 def test_maximize_coverage_capacitated_full(demand, facilities, capacities):

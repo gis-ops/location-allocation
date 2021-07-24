@@ -1,15 +1,9 @@
 from ._maximize_coverage import MAXIMIZE_COVERAGE
-from ._maximize_coverage_capacitated import (
-    MAXIMIZE_COVERAGE_CAPACITATED,
-)
-from ._maximize_coverage_minimize_cost import (
-    MAXIMIZE_COVERAGE_MINIMIZE_COST,
-)
-
+from ._maximize_coverage_capacitated import MAXIMIZE_COVERAGE_CAPACITATED
+from ._maximize_coverage_minimize_cost import MAXIMIZE_COVERAGE_MINIMIZE_COST
 from ._maximize_coverage_minimize_facilities import (
     MAXIMIZE_COVERAGE_MINIMIZE_FACILITIES,
 )
-
 from .utils import custom_logger
 
 custom_logger("la", debug=True)

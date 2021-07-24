@@ -1,3 +1,4 @@
+# flake8: noqa
 from location_allocation import __version__
 
 

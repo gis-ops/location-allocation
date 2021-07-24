@@ -1,15 +1,16 @@
-from matplotlib import pyplot as plt
-from matplotlib import colors
-from itertools import cycle
-import numpy as np
-from scipy.spatial import ConvexHull
-from shapely.geometry import Polygon, Point
-import random
+"""Common functions used across all models"""
 import logging
+import random
+from itertools import cycle
+
+import numpy as np
+from matplotlib import colors
+from matplotlib import pyplot as plt
+from scipy.spatial import ConvexHull
+from shapely.geometry import Point, Polygon
 
 
 def generate_facility_capacities(M):
-
     capacities = []
     while len(capacities) < M:
         random_capacity = random.randint(M * 0.5, M * 1.8)
@@ -20,11 +21,13 @@ def generate_facility_capacities(M):
 def generate_candidate_facilities(points, M=100):
     """
     Generate M candidate sites with the convex hull of a point set
-    Input:
-        points: a Numpy array with shape of (N,2)
-        M: the number of candidate sites to generate
-    Return:
-        sites: a Numpy array with shape of (M,2)
+
+    :param points:  a Numpy array with shape of (n_points,2)
+    :type points: ndarray
+    :param M: the number of candidate sites to generate
+    :type points: int
+    :return: a Numpy array with shape of (M,2)
+    :rtype: ndarray
     """
     hull = ConvexHull(points)
     polygon_points = points[hull.vertices]
@@ -40,32 +43,33 @@ def generate_candidate_facilities(points, M=100):
     return np.array([(p.x, p.y) for p in sites])
 
 
-def plot_result(points, point_allocations, opt_sites):
+def plot_result(points, point_allocations, opt_sites, other_sites):
     """
-    Plot the result
-    Input:
-        points: input points, Numpy array in shape of [N,2]
-        opt_sites: locations K optimal sites, Numpy array in shape of [K,2]
+    Plots the result with matplotlib
+
+    :param points:  a numpy array with shape of (n_points,2)
+    :type points: ndarray
+    :param point_allocations: facilitiy to point allocations
+    :type point_allocations: dict
+    :param opt_sites: coordinates of optimital sites as numpy array
+        in shape of [n_opt_sites,2]
+    :type opt_sites: list
+    :param other_sites: coordinates of other sites as numpy array
+        in shape of [n_other_sites,2]
+    :type other_sites: list
     """
-    fig = plt.figure(figsize=(8, 8))
     plt.scatter(points[:, 0], points[:, 1], c="black", s=4)
     ax = plt.gca()
 
     plt.scatter(opt_sites[:, 0], opt_sites[:, 1], c="C1", s=200, marker="*")
+    plt.scatter(other_sites[:, 0], other_sites[:, 1], c="black", s=200, marker="*")
 
-    mpl_colors = []
-    for name, hex in colors.cnames.items():
-        mpl_colors.append(name)
-    cycol = cycle(mpl_colors)
-
+    cycol = cycle(plt.get_cmap("tab20").colors)
     for k, v in point_allocations.items():
         color = next(cycol)
         for point_idx in v:
             plt.scatter(points[point_idx][0], points[point_idx][1], c=color, marker="+")
 
-    # for site in opt_sites:
-    #     circle = plt.Circle(site, radius, color='C1',fill=False,lw=2)
-    #     ax.add_artist(circle)
     ax.axis("equal")
     ax.tick_params(
         axis="both",
@@ -82,6 +86,18 @@ def plot_result(points, point_allocations, opt_sites):
 
 
 def custom_logger(name, debug, report=False):
+    """
+    Custom Logger
+
+    :param name: name of the logger
+    :type name: str
+    :param debug: if debug is true or false
+    :type debug: bool
+    :param report: if a logfile should be written, defaults to False
+    :type report: bool, optional
+    :return: returns the logging object
+    :rtype: object
+    """
     formatter = logging.Formatter(
         fmt="%(asctime)s - %(levelname)s - %(module)s - %(message)s"
     )

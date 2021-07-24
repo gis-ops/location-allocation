@@ -1,5 +1,6 @@
-from sklearn.datasets import make_moons
+"""Example for Maximize Coverage Minimize Facilities"""
 from scipy.spatial import distance_matrix
+from sklearn.datasets import make_moons
 
 from location_allocation import MAXIMIZE_COVERAGE_MINIMIZE_FACILITIES, utils
 

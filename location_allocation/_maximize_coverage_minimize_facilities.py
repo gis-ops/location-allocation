@@ -1,27 +1,32 @@
 # -*- coding: utf-8 -*-
 """
-Maximize Coverage Minimize Facilities Location Problem:
-The problem is to allocate as many locations to facilities, while minimizing the number 
-of facilities selected for allocation. The number of facilities to allocate is determined by
-the solver, hence the cost does not play a role in this model. 
+Maximize Coverage Minimize Facilities Location Problem
 
-Problem Objective: 
+The problem is to allocate as many locations to facilities, while minimizing the number
+of facilities selected for allocation. The number of facilities to allocate is determined by
+the solver, hence the cost does not play a role in this model. For this model 2 weights
+decide at what point is it beneficial to add an extra facility. In other words, how many locations
+should be covered in order for it to be economical to add a facility.
+
+Problem Objective:
 The objective can be modelled as: minimize(total_facilities_selected * W1 - total_coverage * W2).
-    
+
 Notes: (Una to verify)
 - Demand points exceeding the facilities cost cutoffs are not considered.
 - Demand points within the cost cutoff of one candidate facility has all its weight allocated to it.
 - Demand points within the cost cutoff of 2 or more facilities is allocated to the nearest facility.
-- The number of facilities will be reduced if the cost of having one extra facility outweighs the 
-benefit of having X locations covered. This decision is dependent on the penalty weights for number 
-of facilities and location coverage. As an example: if facility_minimisation_weight is set to 10 and 
+- The number of facilities will be reduced if the cost of having one extra facility outweighs the
+benefit of having X locations covered. This decision is dependent on the penalty weights for number
+of facilities and location coverage. As an example: if facility_minimisation_weight is set to 10 and
 coverage_maximisation_weight is set to 1 a facility covering less than 10 demand points will be removed.
 """
-
-import numpy as np
-from mip import *
-import time
+import logging
 import random
+import time
+
+import mip as mip
+import numpy as np
+
 from .common import CONFIG
 
 logger = logging.getLogger("la")
@@ -29,14 +34,21 @@ logger = logging.getLogger("la")
 
 class RESULT:
     def __init__(self, time_elapsed, solution):
+        """
+        Result class
+
+        :param time_elapsed: the time the solver occupied to compute the result
+        :type time_elapsed: int
+        :param solution: the solution object
+        :type solution: object
+        """
         self.time_elapsed = time_elapsed
         self.solution = solution
 
 
 def generate_initial_solution(D, I, J, K):
     """
-    Generate initial solution to use as
-    the starting point for the milp solver.
+    Generate initial solution to use as the starting point for the milp solver.
 
     :param D: Numpy array of shape (n_points, n_facilities).
     :type D: ndarray
@@ -49,7 +61,6 @@ def generate_initial_solution(D, I, J, K):
     :return: a list of pairs (i, j) denoting that point i is covered by facility j
     :rtype: list
     """
-
     Is = list(range(0, I))  # list of points
     max_number_of_trials = (
         1000  # if a feasible solution is not found after this many trials,
@@ -81,6 +92,7 @@ def generate_initial_solution(D, I, J, K):
             best_solution = solution
 
         if assigned_facilities == K or number_of_trials > max_number_of_trials:
+            logger.debug("Feasible solution found")
             return best_solution
 
 
@@ -109,17 +121,19 @@ class MAXIMIZE_COVERAGE_MINIMIZE_FACILITIES:
         :param cost_cutoff: Cost cutoff which can be used to exclude points
             from the distance matrix which feature a greater cost.
         :type cost_cutoff: int
-        :param facility_minimisation_weight: Una Help, defaults to 10
+        :param facility_minimisation_weight: This value controls the importance
+            of minimizing facilities, defaults to 10
         :type facility_minimisation_weight: int, optional
-        :param coverage_maximisation_weight: Una Help, defaults to 1
+        :param coverage_maximisation_weight: This value controls the importance
+            of coverage of demand points, defaults to 1
         :type coverage_maximisation_weight: int, optional
-        :param max_facilities: The amount of facilites to choose, must be lesser equal n_facilities,
+        :param max_facilities: The amount of facilites to choose, must be less than n_facilities,
             defaults to None.
         :type max_facilities: integer, optional
-        :param max_gap: Una Help, defaults to 0.1
+        :param max_gap: Value indicating the tolerance for the maximum percentage deviation
+            from the optimal solution cost, defaults to 0.1
         :type max_gap: float, optional
         """
-
         self.config = CONFIG(
             self.__class__.__name__,
             points,
@@ -156,7 +170,7 @@ class MAXIMIZE_COVERAGE_MINIMIZE_FACILITIES:
                     var_type=mip.BINARY, name="z" + str(i) + "_" + str(j)
                 )
 
-        if not self.config.max_facilities is None:
+        if self.config.max_facilities is not None:
             K = self.config.max_facilities
             self.model.add_constr(
                 mip.xsum(x[j] for j in range(J)) <= self.config.max_facilities
@@ -219,7 +233,6 @@ class MAXIMIZE_COVERAGE_MINIMIZE_FACILITIES:
             and points to facility allocations <location_allocation._maximize_coverage_minimize_facilities.RESULT>.
         :rtype: :class:`location_allocation._maximize_coverage_minimize_facilities.MAXIMIZE_COVERAGE_MINIMIZE_FACILITIES`
         """
-
         start = time.time()
         self.model.optimize(max_seconds=max_seconds)
         solution = {}

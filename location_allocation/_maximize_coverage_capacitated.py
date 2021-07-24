@@ -1,34 +1,37 @@
 # -*- coding: utf-8 -*-
+
 """
-Maximum Capicitated Coverage Location Problem:
-The result of this computation is a subset of candidate facilities such 
+Maximum Capicitated Coverage Location Problem
+
+The result of this computation is a subset of candidate facilities such
 that as many demand points as possible are allocated to these within the cost cutoff value
 and considering the capacity of the facility itself.
 
-Problem Objective: 
-Let K be the number of facilities to select for location coverage and let C_f 
-be the maximum number of locations that can be allocated to a facility f. 
-The problem aims to maximize the number of location covered by at least one facility 
-from the subset of K selected facilities, such that the number of locations assigned 
+Problem Objective:
+Let K be the number of facilities to select for location coverage and let C_f
+be the maximum number of locations that can be allocated to a facility f.
+The problem aims to maximize the number of location covered by at least one facility
+from the subset of K selected facilities, such that the number of locations assigned
 to each facility f does not exceed the facility capacity threshold C_f.
 
-Notes: (Una help)
+Notes:
 - Demand points exceeding the facilities cost cutoffs are not considered.
 - Demand points within the cost cutoff of one candidate facility has all its weight allocated to it.
 - Demand points within the cost cutoff of 2 or more facilities is allocated to the nearest facility.
-- If the total demand of a facility is greater than the capacity of the facility, 
-only the demand points that maximize total captured demand and minimize total weighted impedance are allocated (double check)
+- If the total demand of a facility is greater than the capacity of the facility,
+only the demand points that maximize total captured demand and minimize total weighted impedance are allocated (Una verify)
 """
 
 # Author: GIS-OPS UG <enquiry@gis-ops.com>
 #
 # License: GPL License
 
-import numpy as np
-from mip import *
-import time
-import random
 import logging
+import random
+import time
+
+import mip as mip
+import numpy as np
 
 from .common import CONFIG
 
@@ -37,14 +40,21 @@ logger = logging.getLogger("la")
 
 class RESULT:
     def __init__(self, time_elapsed, solution):
+        """
+        Result class
+
+        :param time_elapsed: the time the solver occupied to compute the result
+        :type time_elapsed: int
+        :param solution: the solution object
+        :type solution: object
+        """
         self.time_elapsed = time_elapsed
         self.solution = solution
 
 
 def generate_initial_solution(D, I, J, C, K):
     """
-    Generate initial solution to use as
-    the starting point for the milp solver.
+    Generate initial solution to use as the starting point for the milp solver.
 
     :param D: Numpy array of shape (n_points, n_facilities).
     :type D: ndarray
@@ -59,7 +69,6 @@ def generate_initial_solution(D, I, J, C, K):
     :return: a list of pairs (i, j) denoting that point i is covered by facility j
     :rtype: list
     """
-
     Is = list(range(0, I))  # list of points
     max_number_of_trials = (
         1000  # if a feasible solution is not found after this many trials,
@@ -122,19 +131,18 @@ class MAXIMIZE_COVERAGE_CAPACITATED:
             The distance matrix of points to facilities.
         :type cost_matrix: ndarray
         :param cost_cutoff: Cost cutoff which can be used to exclude points
-            from the distance matrix which
-            feature a greater cost.
+            from the distance matrix which feature a greater cost.
         :type cost_cutoff: int
         :param capacities: Numpy array of shape (n_capacities, ).
-        Must be the same length as facilities with capacities as integers.
+            Must be the same length as facilities with capacities as integers.
         :type capacities: ndarray
         :param facilities_to_choose: The amount of facilites to choose,
-            must be lesser equal n_facilities.
+            must be less than n_facilities.
         :type facilities_to_choose: int
-        :param max_gap: Una help, defaults to 0.1
+        :param max_gap: Value indicating the tolerance for the maximum percentage deviation
+            from the optimal solution cost, defaults to 0.1
         :type max_gap: float, optional
         """
-
         self.config = CONFIG(
             self.__class__.__name__,
             points,
@@ -228,7 +236,6 @@ class MAXIMIZE_COVERAGE_CAPACITATED:
             and points to facility allocations <location_allocation._maximize_coverage_capacitated.RESULT>.
         :rtype: :class:`location_allocation._maximize_coverage_capacitated.MAXIMIZE_COVERAGE_CAPACITATED`
         """
-
         start = time.time()
         self.model.optimize(max_seconds=max_seconds)
 

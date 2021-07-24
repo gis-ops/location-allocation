@@ -1,21 +1,22 @@
 # -*- coding: utf-8 -*-
 """
-Maximum Coverage Minimizing Cost Location Problem:
-The result of this computation is a given subset of candidate facilities such 
+Maximum Coverage Minimizing Cost Location Problem
+
+The result of this computation is a given subset of candidate facilities such
 that as many demand points as possible are allocated to these within the cost cutoff value
-and thereby minimizing the distance of these demand points. 
+and thereby minimizing the distance of these demand points.
 
 Problem Objective:
-Let K be the number of facilities to select for location coverage. The problem is to allocate 
-locations to a selection of K facilities such that: 
-    (i) the location coverage is maximized; 
-    (ii) the total distance from location to facility is minimized; and 
-    (iii) the difference between f_max and f_min is minimized, 
-    where f_max and f_min are the maximum and the minimum number of 
-    locations assigned to a facility in the given solution. 
-The objective is thus to minimize a weighted sum of the three objective terms: 
-i.e., minimize(total_distance * W1 - total_coverage * W2 + coverage_difference *W3), 
-where W1, W2 and W3 are the corresponding penalty weights. 
+Let K be the number of facilities to select for location coverage. The problem is to allocate
+locations to a selection of K facilities such that:
+    (i) the location coverage is maximized;
+    (ii) the total distance from location to facility is minimized; and
+    (iii) the difference between f_max and f_min is minimized,
+    where f_max and f_min are the maximum and the minimum number of
+    locations assigned to a facility in the given solution.
+The objective is thus to minimize a weighted sum of the three objective terms:
+i.e., minimize(total_distance * W1 - total_coverage * W2 + coverage_difference *W3),
+where W1, W2 and W3 are the corresponding penalty weights.
 
 Notes: (Una to verify)
 - Demand points exceeding the facilities cost cutoffs are not considered.
@@ -24,11 +25,13 @@ Notes: (Una to verify)
 - Una help: Some examples like in minimize_facilities
 """
 
-import numpy as np
-from mip import *
-import time
-import random
 import logging
+import random
+import time
+
+import mip as mip
+import numpy as np
+
 from .common import CONFIG
 
 logger = logging.getLogger("la")
@@ -36,14 +39,21 @@ logger = logging.getLogger("la")
 
 class RESULT:
     def __init__(self, time_elapsed, solution):
+        """
+        Result class
+
+        :param time_elapsed: the time the solver occupied to compute the result
+        :type time_elapsed: int
+        :param solution: the solution object
+        :type solution: object
+        """
         self.time_elapsed = time_elapsed
         self.solution = solution
 
 
 def generate_initial_solution(D, I, J, K):
     """
-    Generate initial solution to use as
-    the starting point for the milp solver.
+    Generate initial solution to use as the starting point for the milp solver.
 
     :param D: Numpy array of shape (n_points, n_facilities).
     :type D: ndarray
@@ -56,7 +66,6 @@ def generate_initial_solution(D, I, J, K):
     :return: a list of pairs (i, j) denoting that point i is covered by facility j
     :rtype: list
     """
-
     Is = list(range(0, I))  # list of points
     max_number_of_trials = (
         1000  # if a feasible solution is not found after this many trials,
@@ -125,7 +134,7 @@ class MAXIMIZE_COVERAGE_MINIMIZE_COST:
             feature a greater cost.
         :type cost_cutoff: int
         :param facilities_to_choose: The amount of facilites to choose,
-            must be lesser equal n_facilities.
+            must be less than n_facilities.
         :type facilities_to_choose: int
         :param load_distribution_weight: Una Help, defaults to 10
         :type load_distribution_weight: int, optional
@@ -133,10 +142,10 @@ class MAXIMIZE_COVERAGE_MINIMIZE_COST:
         :type maximum_coverage_weight: int, optional
         :param total_distance_weight: Una Help, defaults to 1
         :type total_distance_weight: int, optional
-        :param max_gap: Una Help, defaults to 0.1
+        :param max_gap: Value indicating the tolerance for the maximum percentage deviation
+            from the optimal solution cost, defaults to 0.1
         :type max_gap: float, optional
         """
-
         self.config = CONFIG(
             self.__class__.__name__,
             points,
@@ -228,7 +237,7 @@ class MAXIMIZE_COVERAGE_MINIMIZE_COST:
         total_distance_weight = self.config.total_distance_weight
 
         # objective function: minimize the distance + maximize coverage + minimize difference between max facility and min facility allocation
-        # note that minLoad  takes on a negative value, and hence (maxLoad + minLoad) in the milp model objective
+        # note that minLoad takes on a negative value, and hence (maxLoad + minLoad) in the milp model objective
         self.model.objective = mip.minimize(
             (maxLoad + minLoad) * load_distribution_weight
             + mip.xsum(-y[i] * maximum_coverage_weight for i in range(I))

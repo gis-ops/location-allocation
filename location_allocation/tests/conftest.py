@@ -1,10 +1,6 @@
-"""
-conftest.py
-"""
-
-# https://stackoverflow.com/questions/65116284/python-unittest-debugging-in-vscode
-import pytest
+# flake8: noqa
 import numpy as np
+import pytest
 from matplotlib import pyplot as plt
 
 
@@ -47,7 +43,9 @@ def demand():
 
 @pytest.fixture
 def facilities():
-    """ Creates dummy faciltilies data"""
+    """
+    Creates dummy faciltilies data
+    """
 
     facilities = np.array([[-5, 10], [5, 10], [5, 0], [-5, 0]])
 
@@ -56,7 +54,9 @@ def facilities():
 
 @pytest.fixture
 def capacities():
-    """ Creates dummy faciltilies capacities data"""
+    """
+    Creates dummy faciltilies capacities data
+    """
     capacities = np.array([15, 15, 5, 5])
 
     return capacities

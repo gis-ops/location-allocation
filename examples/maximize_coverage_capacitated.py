@@ -1,5 +1,6 @@
-from sklearn.datasets import make_moons
+"""Example for Maximize Capacitated Coverage"""
 from scipy.spatial import distance_matrix
+from sklearn.datasets import make_moons
 
 from location_allocation import MAXIMIZE_COVERAGE_CAPACITATED, utils
 

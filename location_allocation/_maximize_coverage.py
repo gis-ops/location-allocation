@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-Maximize Coverage Location Problem:
-The result of this computation is a subset of candidate facilities such 
+Maximize Coverage Location Problem
+
+The result of this computation is a subset of candidate facilities such
 that as many demand points as possible are allocated to these within the cost cutoff value.
-    
-Problem Objective:    
-Let K be the number of facilities to select for location coverage. 
-The problem aims to maximize the number of locations covered by at least one facility 
+
+Problem Objective:
+Let K be the number of facilities to select for location coverage.
+The problem aims to maximize the number of locations covered by at least one facility
 from the subset of K selected facilities.
 
 Notes: (Una to verify)
@@ -19,15 +20,26 @@ Church, R. and C. ReVelle, "The maximal covering location problem".
 In: Papers of the Regional Science Association, pp. 101-118. 1974.
 """
 
-import numpy as np
-from mip import *
 import time
+
+import mip as mip
+import numpy as np
 
 from .common import CONFIG
 
 
 class RESULT:
     def __init__(self, time_elapsed, opt_facilities, opt_facilities_indexes):
+        """
+        Result class
+
+        :param time_elapsed: the time the solver occupied to compute the result
+        :type time_elapsed: int
+        :param opt_facilities: the optimial facilities coordinates
+        :type opt_facilities: ndarray
+        :param opt_facilities_indexes: the optimial facilities indices
+        :type opt_facilities: list
+        """
         self.time_elapsed = time_elapsed
         self.opt_facilities = opt_facilities
         self.opt_facilities_indexes = opt_facilities_indexes
@@ -56,15 +68,13 @@ class MAXIMIZE_COVERAGE:
         :param cost_cutoff: Cost cutoff which can be used to exclude points
             from the distance matrix which feature a greater cost.
         :type cost_cutoff: int
-        :param facilities_to_choose: The amount of facilites to choose, 
-            must be lesser equal n_facilities.
+        :param facilities_to_choose: The amount of facilites to choose,
+            must be less than n_facilities.
         :type facilities_to_choose: int
-        :param max_gap: Una Help, defaults to 0.1
+        :param max_gap: Value indicating the tolerance for the maximum percentage deviation
+            from the optimal solution cost, defaults to 0.1
         :type max_gap: float, optional
-        
-        
         """
-
         self.config = CONFIG(
             self.__class__.__name__,
             points,
