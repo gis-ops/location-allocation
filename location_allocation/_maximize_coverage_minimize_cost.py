@@ -1,28 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Maximum Coverage Minimizing Cost Location Problem
-
-The result of this computation is a given subset of candidate facilities such
-that as many demand points as possible are allocated to these within the cost cutoff value
-and thereby minimizing the distance of these demand points.
-
-Problem Objective:
-Let K be the number of facilities to select for location coverage. The problem is to allocate
-locations to a selection of K facilities such that:
-    (i) the location coverage is maximized;
-    (ii) the total distance from location to facility is minimized; and
-    (iii) the difference between f_max and f_min is minimized,
-    where f_max and f_min are the maximum and the minimum number of
-    locations assigned to a facility in the given solution.
-The objective is thus to minimize a weighted sum of the three objective terms:
-i.e., minimize(total_distance * W1 - total_coverage * W2 + coverage_difference *W3),
-where W1, W2 and W3 are the corresponding penalty weights.
-
-Notes: (Una to verify)
-- Demand points exceeding the facilities cost cutoffs are not considered.
-- Demand points within the cost cutoff of one candidate facility has all its weight allocated to it.
-- Demand points within the cost cutoff of 2 or more facilities is allocated to the nearest facility.
-- Una help: Some examples like in minimize_facilities
 """
 
 import logging
@@ -32,78 +10,9 @@ import time
 import mip as mip
 import numpy as np
 
-from .common import CONFIG
+from .common import CONFIG, RESULT
 
 logger = logging.getLogger("la")
-
-
-class RESULT:
-    def __init__(self, time_elapsed, solution):
-        """
-        Result class
-
-        :param time_elapsed: the time the solver occupied to compute the result
-        :type time_elapsed: int
-        :param solution: the solution object
-        :type solution: object
-        """
-        self.time_elapsed = time_elapsed
-        self.solution = solution
-
-
-def generate_initial_solution(D, I, J, K):
-    """
-    Generate initial solution to use as the starting point for the milp solver.
-
-    :param D: Numpy array of shape (n_points, n_facilities).
-    :type D: ndarray
-    :param I: n_points
-    :type I: int
-    :param J: n_facilities
-    :type J: int
-    :param K: facilities_to_choose
-    :type K: int
-    :return: a list of pairs (i, j) denoting that point i is covered by facility j
-    :rtype: list
-    """
-    Is = list(range(0, I))  # list of points
-    max_number_of_trials = (
-        1000  # if a feasible solution is not found after this many trials,
-    )
-    # the least infeasible solution is returned
-    number_of_trials = 0
-    best_solution = []  # least infeasible solution
-    best_number_of_assigned_facilities = 0
-    while True:
-        number_of_trials += 1
-        Js = random.sample(list(range(0, J)), K)  # random selection of K facilities
-        solution = []
-
-        random.shuffle(Is)
-        random.shuffle(Js)
-        assigned_facilities = 0
-        for j in Js:
-            points_assigned_to_facility = 0
-            for i in Is:
-                if D[i, j] == 1:
-                    points_assigned_to_facility += 1
-                    solution.append([i, j])
-
-            if points_assigned_to_facility != 0:
-                assigned_facilities += 1
-
-        if assigned_facilities > best_number_of_assigned_facilities:
-            best_number_of_assigned_facilities = assigned_facilities
-            best_solution = solution
-
-        if assigned_facilities == K or number_of_trials > max_number_of_trials:
-            if number_of_trials > max_number_of_trials:
-                logger.debug(
-                    "Feasible solution not found, return least infeasible solution"
-                )
-            else:
-                logger.debug("Feasible solution found")
-            return best_solution
 
 
 class MAXIMIZE_COVERAGE_MINIMIZE_COST:
@@ -120,7 +29,37 @@ class MAXIMIZE_COVERAGE_MINIMIZE_COST:
         max_gap=0.1,
     ):
         """
-        Maximum Coverage Minimum Cost Coverage Location Problem Class
+        **Maximum Coverage Minimum Cost Coverage Location Problem**
+
+        The result of this computation is a given subset of candidate facilities such
+        that as many demand points as possible are allocated to these within the cost cutoff value
+        and thereby minimizing the distance of these demand points.
+
+        **Problem Objective**
+
+        Let K be the number of facilities to select for location coverage. The problem is to allocate
+        locations to a selection of K facilities such that:
+            1. the location coverage is maximized;
+            2. the total distance from location to facility is minimized; and
+            3. the difference between f_max and f_min is minimized,
+               where f_max and f_min are the maximum and the minimum number of
+               locations assigned to a facility in the given solution.
+
+        The objective is thus to minimize a weighted sum of the three objective terms::
+
+            minimize(total_distance * W1 - total_coverage * W2 + coverage_difference * W3)
+
+        where :code:`W1`, :code:`W2` and :code:`W3` are the corresponding penalty weights.
+
+        **Notes** (Una to verify)
+
+        * Demand points exceeding the facilities cost cutoffs are not considered.
+
+        * Demand points within the cost cutoff of one candidate facility has all its weight allocated to it.
+
+        * Demand points within the cost cutoff of 2 or more facilities is allocated to the nearest facility.
+
+        * Una help: Some examples like in minimize_facilities
 
         :param points: Numpy array of shape (n_points, 2).
         :type points: ndarray
@@ -185,7 +124,7 @@ class MAXIMIZE_COVERAGE_MINIMIZE_COST:
         maxLoad = self.model.add_var(var_type=mip.INTEGER, lb=0, ub=I, name="maxLoad")
         minLoad = self.model.add_var(var_type=mip.INTEGER, lb=-I, ub=0, name="minLoad")
 
-        initialSolution = generate_initial_solution(
+        initialSolution = self.generate_initial_solution(
             self.config.cost_matrix, I, J, self.config.facilities_to_choose
         )
 
@@ -251,6 +190,61 @@ class MAXIMIZE_COVERAGE_MINIMIZE_COST:
         self.model.start = [(z[i, j], 1.0) for (i, j) in initialSolution]
         self.model.max_mip_gap = self.config.max_gap
 
+    @staticmethod
+    def generate_initial_solution(D, I, J, K):
+        """
+        Generate initial solution to use as the starting point for the milp solver.
+
+        :param D: Numpy array of shape (n_points, n_facilities).
+        :type D: ndarray
+        :param I: n_points
+        :type I: int
+        :param J: n_facilities
+        :type J: int
+        :param K: facilities_to_choose
+        :type K: int
+        :return: a list of pairs (i, j) denoting that point i is covered by facility j
+        :rtype: list
+        """
+        Is = list(range(0, I))  # list of points
+        max_number_of_trials = (
+            1000  # if a feasible solution is not found after this many trials,
+        )
+        # the least infeasible solution is returned
+        number_of_trials = 0
+        best_solution = []  # least infeasible solution
+        best_number_of_assigned_facilities = 0
+        while True:
+            number_of_trials += 1
+            Js = random.sample(list(range(0, J)), K)  # random selection of K facilities
+            solution = []
+
+            random.shuffle(Is)
+            random.shuffle(Js)
+            assigned_facilities = 0
+            for j in Js:
+                points_assigned_to_facility = 0
+                for i in Is:
+                    if D[i, j] == 1:
+                        points_assigned_to_facility += 1
+                        solution.append([i, j])
+
+                if points_assigned_to_facility != 0:
+                    assigned_facilities += 1
+
+            if assigned_facilities > best_number_of_assigned_facilities:
+                best_number_of_assigned_facilities = assigned_facilities
+                best_solution = solution
+
+            if assigned_facilities == K or number_of_trials > max_number_of_trials:
+                if number_of_trials > max_number_of_trials:
+                    logger.debug(
+                        "Feasible solution not found, return least infeasible solution"
+                    )
+                else:
+                    logger.debug("Feasible solution found")
+                return best_solution
+
     def optimize(self, max_seconds=200):
         """
         Optimize Maximize Coverage Minimize Cost Problem
@@ -258,9 +252,12 @@ class MAXIMIZE_COVERAGE_MINIMIZE_COST:
         :param max_seconds: The amount of time given to the solver, defaults to 200.
         :type max_seconds: int, optional
         :return: Returns an instance of self consisting of
-            the configuration <location_allocation.common.CONFIG>,
-            mip model <mip.model.Model> (https://docs.python-mip.com/en/latest/classes.html)
-            and points to facility allocations <location_allocation._maximize_coverage_minimize_cost.RESULT>.
+
+            * the configuration <location_allocation.common.CONFIG>,
+
+            * mip model <mip.model.Model> (https://docs.python-mip.com/en/latest/classes.html)
+
+            * points to facility allocations <location_allocation._maximize_coverage_minimize_cost.RESULT>.
         :rtype: :class:`location_allocation._maximize_coverage_minimize_cost.MAXIMIZE_COVERAGE_MINIMIZE_COST`
         """
         start = time.time()

@@ -1,23 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Maximize Coverage Location Problem
-
-The result of this computation is a subset of candidate facilities such
-that as many demand points as possible are allocated to these within the cost cutoff value.
-
-Problem Objective:
-Let K be the number of facilities to select for location coverage.
-The problem aims to maximize the number of locations covered by at least one facility
-from the subset of K selected facilities.
-
-Notes: (Una to verify)
-- Demand points exceeding the facilities cost cutoffs are not considered
-- Demand points within the cost cutoff of one candidate facility has all its weight allocated to it
-- Demand points within the cost cutoff of 2 or more facilities is allocated to the nearest facility
-
-References:
-Church, R. and C. ReVelle, "The maximal covering location problem".
-In: Papers of the Regional Science Association, pp. 101-118. 1974.
 """
 
 import time
@@ -25,24 +8,7 @@ import time
 import mip as mip
 import numpy as np
 
-from .common import CONFIG
-
-
-class RESULT:
-    def __init__(self, time_elapsed, opt_facilities, opt_facilities_indexes):
-        """
-        Result class
-
-        :param time_elapsed: the time the solver occupied to compute the result
-        :type time_elapsed: int
-        :param opt_facilities: the optimial facilities coordinates
-        :type opt_facilities: ndarray
-        :param opt_facilities_indexes: the optimial facilities indices
-        :type opt_facilities: list
-        """
-        self.time_elapsed = time_elapsed
-        self.opt_facilities = opt_facilities
-        self.opt_facilities_indexes = opt_facilities_indexes
+from .common import CONFIG, RESULT
 
 
 class MAXIMIZE_COVERAGE:
@@ -56,7 +22,28 @@ class MAXIMIZE_COVERAGE:
         max_gap=0.1,
     ):
         """
-        Maximum Coverage Location Problem Class
+        **Maximum Coverage Location Problem**
+
+        The result of this computation is a subset of candidate facilities such
+        that as many demand points as possible are allocated to these within the cost cutoff value.
+
+        **Problem Objective**
+
+        Let K be the number of facilities to select for location coverage.
+        The problem aims to maximize the number of locations covered by at least one facility
+        from the subset of K selected facilities.
+
+        **Notes** (Una to verify)
+
+        * Demand points exceeding the facilities cost cutoffs are not considered
+
+        * Demand points within the cost cutoff of one candidate facility has all its weight allocated to it
+
+        * Demand points within the cost cutoff of 2 or more facilities is allocated to the nearest facility
+
+        References:
+        Church, R. and C. ReVelle, "The maximal covering location problem".
+        In: Papers of the Regional Science Association, pp. 101-118. 1974.
 
         :param points:  Numpy array of shape (n_points, 2).
         :type points: ndarray
@@ -122,9 +109,12 @@ class MAXIMIZE_COVERAGE:
         :param max_seconds: The amount of time given to the solver, defaults to 200.
         :type max_seconds: int, optional
         :return: Returns an instance of self consisting of
-            the configuration <location_allocation.common.CONFIG>,
-            mip model <mip.model.Model> (https://docs.python-mip.com/en/latest/classes.html)
-            and optimized facility locations. <location_allocation._maximize_coverage.RESULT>.
+
+            * the configuration <location_allocation.common.CONFIG>,
+
+            * mip model <mip.model.Model> (https://docs.python-mip.com/en/latest/classes.html)
+
+            * optimized facility locations. <location_allocation._maximize_coverage.RESULT>.
         :rtype: :class:`location_allocation._maximize_coverage.MAXIMIZE_COVERAGE`
         """
         start = time.time()
@@ -137,7 +127,12 @@ class MAXIMIZE_COVERAGE:
             for v in self.model.vars:
                 if v.x == 1 and v.name[0] == "x":
                     solution.append(int(v.name[1:]))
-        self.result = RESULT(
-            float(time.time() - start), self.config.facilities[solution], solution
-        )
+
+        # opt_facilities: the optimial facilities coordinates
+        # opt_facilities_indexes: the optimial facilities indices
+        solution = {
+            "opt_facilities": self.config.facilities[solution],
+            "opt_facilities_indexes": solution,
+        }
+        self.result = RESULT(float(time.time() - start), solution)
         return self

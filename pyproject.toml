@@ -26,6 +26,8 @@ flake8-docstrings = "^1.5.0"
 darglint = "^1.7.0"
 tox = "^3.23.0"
 tox-pyenv = "^1.1.0"
+sphinx-rtd-theme = "^0.5.2"
+Sphinx = "^4.1.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

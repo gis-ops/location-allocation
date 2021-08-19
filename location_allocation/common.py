@@ -2,6 +2,20 @@
 import numpy as np
 
 
+class RESULT:
+    def __init__(self, time_elapsed, solution):
+        """
+        Result class
+
+        :param time_elapsed: the time the solver occupied to compute the result
+        :type time_elapsed: int
+        :param solution: the solution object
+        :type solution: object
+        """
+        self.time_elapsed = time_elapsed
+        self.solution = solution
+
+
 class CONFIG:
     def __init__(
         self, algorithm_name, points, facilities, cost_matrix, cost_cutoff, **kwargs

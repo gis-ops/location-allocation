@@ -1,11 +1,12 @@
 """Example for Maximize Capacitated Coverage"""
 from scipy.spatial import distance_matrix
 from sklearn.datasets import make_moons
+import numpy as np
 
 from location_allocation import MAXIMIZE_COVERAGE_CAPACITATED, utils
 
-points, _ = make_moons(3000, noise=0.15)
-facilities = utils.generate_candidate_facilities(points, 50)
+points, _ = make_moons(10000, noise=0.15)
+facilities = utils.generate_candidate_facilities(points, 100)
 capacities = utils.generate_facility_capacities(facilities.shape[0])
 
 cost_matrix = distance_matrix(points, facilities)
@@ -20,5 +21,7 @@ mcclp = MAXIMIZE_COVERAGE_CAPACITATED(
 )
 mcclp.optimize()
 
-opt_facilities = facilities[list(mcclp.result.solution.keys())]
-utils.plot_result(points, mcclp.result.solution, opt_facilities)
+opt_facilities_indices = list(mcclp.result.solution.keys())
+opt_facilities = facilities[opt_facilities_indices]
+other_facilities = np.delete(facilities, [opt_facilities_indices], axis=0)
+utils.plot_result(points, mcclp.result.solution, opt_facilities, other_facilities)
