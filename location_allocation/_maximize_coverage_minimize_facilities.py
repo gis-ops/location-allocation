@@ -5,26 +5,27 @@ Maximize Coverage Minimize Facilities Location Problem
 import logging
 import random
 import time
+from typing import Dict, List, Optional
 
 import mip as mip
 import numpy as np
 
-from .common import CONFIG, RESULT
+from .common import Config, Result
 
-logger = logging.getLogger("la")
+logger = logging.getLogger(__name__)
 
 
-class MAXIMIZE_COVERAGE_MINIMIZE_FACILITIES:
+class MaximizeCoverageMinimizeFacilities:
     def __init__(
         self,
-        points,
-        facilities,
-        cost_matrix,
-        cost_cutoff,
-        max_facilities=None,
-        facility_minimisation_weight=10,
-        coverage_maximisation_weight=1,
-        max_gap=0.1,
+        points: np.ndarray,
+        facilities: np.ndarray,
+        cost_matrix: np.ndarray,
+        cost_cutoff: int,
+        max_facilities: Optional[int] = None,
+        facility_minimisation_weight: int = 10,
+        coverage_maximisation_weight: int = 1,
+        max_gap: float = 0.1,
     ):
         """
         **Maximum Coverage Minimize Facilities Location Problem**
@@ -55,29 +56,21 @@ class MAXIMIZE_COVERAGE_MINIMIZE_FACILITIES:
           :code:`coverage_maximisation_weight` is set to 1 a facility covering less than 10 demand points will be removed.
 
         :param points:  Numpy array of shape (n_points, 2).
-        :type points: ndarray
         :param facilities: Numpy array of shape (n_facilities, 2).
-        :type facilities: ndarray
         :param cost_matrix: Numpy array of shape (n_points, n_facilities).
             The distance matrix of points to facilities.
-        :type cost_matrix: ndarray
         :param cost_cutoff: Cost cutoff which can be used to exclude points
             from the distance matrix which feature a greater cost.
-        :type cost_cutoff: int
         :param facility_minimisation_weight: This value controls the importance
             of minimizing facilities, defaults to 10
-        :type facility_minimisation_weight: int, optional
         :param coverage_maximisation_weight: This value controls the importance
             of coverage of demand points, defaults to 1
-        :type coverage_maximisation_weight: int, optional
         :param max_facilities: The amount of facilites to choose, must be less than n_facilities,
             defaults to None.
-        :type max_facilities: integer, optional
         :param max_gap: Value indicating the tolerance for the maximum percentage deviation
             from the optimal solution cost, defaults to 0.1
-        :type max_gap: float, optional
         """
-        self.config = CONFIG(
+        self.config = Config(
             self.__class__.__name__,
             points,
             facilities,
@@ -88,6 +81,8 @@ class MAXIMIZE_COVERAGE_MINIMIZE_FACILITIES:
             max_facilities=max_facilities,
             max_gap=max_gap,
         )
+
+        self.result = {}
 
         I = self.config.points.shape[0]
         J = self.config.facilities.shape[0]
@@ -109,15 +104,11 @@ class MAXIMIZE_COVERAGE_MINIMIZE_FACILITIES:
 
         for i in range(I):
             for j in range(J):
-                z[i, j] = self.model.add_var(
-                    var_type=mip.BINARY, name="z" + str(i) + "_" + str(j)
-                )
+                z[i, j] = self.model.add_var(var_type=mip.BINARY, name="z" + str(i) + "_" + str(j))
 
         if self.config.max_facilities is not None:
             K = self.config.max_facilities
-            self.model.add_constr(
-                mip.xsum(x[j] for j in range(J)) <= self.config.max_facilities
-            )
+            self.model.add_constr(mip.xsum(x[j] for j in range(J)) <= self.config.max_facilities)
         else:
             K = J
         # K should not be too large otherwise it becomes fairly slow
@@ -137,20 +128,15 @@ class MAXIMIZE_COVERAGE_MINIMIZE_FACILITIES:
         # if point is covered, it needs to be covered by at least one facility
         for i in range(I):
             self.model.add_constr(
-                mip.xsum(z[i, j] for j in np.where(self.config.cost_matrix[i] == 1)[0])
-                >= y[i]
+                mip.xsum(z[i, j] for j in np.where(self.config.cost_matrix[i] == 1)[0]) >= y[i]
             )
 
         # if at least one point is allocated to facility, the facility must be considered as allocated: for all j \in J sum(z_ij) >= 1 TRUEIFF xj = true
         for j in range(J):
-            self.model.add_constr(
-                -1 + mip.xsum(z[i, j] for i in range(I)) >= -bigM * (1 - x[j])
-            )
+            self.model.add_constr(-1 + mip.xsum(z[i, j] for i in range(I)) >= -bigM * (1 - x[j]))
 
         for j in range(J):
-            self.model.add_constr(
-                -1 + epsilon + mip.xsum(z[i, j] for i in range(I)) <= bigM * x[j]
-            )
+            self.model.add_constr(-1 + epsilon + mip.xsum(z[i, j] for i in range(I)) <= bigM * x[j])
 
         facility_minimisation_weight = self.config.facility_minimisation_weight
         coverage_maximisation_weight = self.config.coverage_maximisation_weight
@@ -165,25 +151,19 @@ class MAXIMIZE_COVERAGE_MINIMIZE_FACILITIES:
         self.model.max_mip_gap = self.config.max_gap
 
     @staticmethod
-    def generate_initial_solution(D, I, J, K):
+    def generate_initial_solution(D: np.ndarray, I: int, J: int, K: int) -> List[List[int]]:
         """
         Generate initial solution to use as the starting point for the milp solver.
 
         :param D: Numpy array of shape (n_points, n_facilities).
-        :type D: ndarray
         :param I: n_points
-        :type I: int
         :param J: n_facilities
-        :type J: int
         :param K: n_facilities or max_facilities if provided by the user
-        :type K: int
         :return: a list of pairs (i, j) denoting that point i is covered by facility j
         :rtype: list
         """
         Is = list(range(0, I))  # list of points
-        max_number_of_trials = (
-            1000  # if a feasible solution is not found after this many trials,
-        )
+        max_number_of_trials = 1000  # if a feasible solution is not found after this many trials,
         # the least infeasible solution is returned
         number_of_trials = 0
         best_solution = []  # least infeasible solution
@@ -214,20 +194,18 @@ class MAXIMIZE_COVERAGE_MINIMIZE_FACILITIES:
                 logger.debug("Feasible solution found")
                 return best_solution
 
-    def optimize(self, max_seconds=200):
+    def optimize(self, max_seconds: int = 200) -> "MaximizeCoverageMinimizeFacilities":
         """
         Optimize Maximize Coverage Minimize Facilities Problem
 
-        :param max_seconds: The amount of time given to the solver, defaults to 200.
-        :type max_seconds: int, optional
+        :param max_seconds: The amount of time given to the solver.
         :return: Returns an instance of self consisting of
 
-            * configuration <location_allocation.common.CONFIG>,
+            * configuration :class:`location_allocation.common.Config`,
 
             * mip model <mip.model.Model> (https://docs.python-mip.com/en/latest/classes.html)
 
-            * points to facility allocations <location_allocation._maximize_coverage_minimize_facilities.RESULT>.
-        :rtype: :class:`location_allocation._maximize_coverage_minimize_facilities.MAXIMIZE_COVERAGE_MINIMIZE_FACILITIES`
+            * points to facility allocations :class:`location_allocation._maximize_coverage_minimize_facilities.Result`.
         """
         start = time.time()
         self.model.optimize(max_seconds=max_seconds)
@@ -245,5 +223,6 @@ class MAXIMIZE_COVERAGE_MINIMIZE_FACILITIES:
                         solution[site_ix] = []
                     solution[site_ix].append(point_ix)
 
-        self.result = RESULT(float(time.time() - start), solution)
+        self.result = Result(float(time.time() - start), solution)
+
         return self

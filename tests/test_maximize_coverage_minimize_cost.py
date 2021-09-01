@@ -1,16 +1,15 @@
-# flake8: noqa
 import numpy as np
 from mip import OptimizationStatus
 from scipy.spatial import distance_matrix
 
-from location_allocation import MAXIMIZE_COVERAGE_MINIMIZE_COST, utils
+from location_allocation import MaximizeCoverageMinimizeCost
 
 
 def test_maximize_coverage_minimize_cost_near(demand, facilities):
 
     cost_matrix = distance_matrix(demand, facilities)
 
-    mcmclp = MAXIMIZE_COVERAGE_MINIMIZE_COST(
+    mcmclp = MaximizeCoverageMinimizeCost(
         demand,
         facilities,
         cost_matrix,
@@ -34,7 +33,7 @@ def test_maximize_coverage_minimize_cost_far(demand, facilities):
 
     cost_matrix = distance_matrix(demand, facilities)
 
-    mcmclp = MAXIMIZE_COVERAGE_MINIMIZE_COST(
+    mcmclp = MaximizeCoverageMinimizeCost(
         demand,
         facilities,
         cost_matrix,

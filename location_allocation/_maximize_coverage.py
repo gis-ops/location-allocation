@@ -4,22 +4,23 @@ Maximize Coverage Location Problem
 """
 
 import time
+from typing import List
 
 import mip as mip
 import numpy as np
 
-from .common import CONFIG, RESULT
+from .common import Config, Result
 
 
-class MAXIMIZE_COVERAGE:
+class MaximizeCoverage:
     def __init__(
         self,
-        points,
-        facilities,
-        cost_matrix,
+        points: np.ndarray,
+        facilities: np.ndarray,
+        cost_matrix: np.ndarray,
         cost_cutoff,
         facilities_to_choose,
-        max_gap=0.1,
+        max_gap: float = 0.1,
     ):
         """
         **Maximum Coverage Location Problem**
@@ -46,23 +47,17 @@ class MAXIMIZE_COVERAGE:
         In: Papers of the Regional Science Association, pp. 101-118. 1974.
 
         :param points:  Numpy array of shape (n_points, 2).
-        :type points: ndarray
         :param facilities: Numpy array of shape (n_facilities, 2).
-        :type facilities: ndarray
         :param cost_matrix: Numpy array of shape (n_points, n_facilities).
             The distance matrix of points to facilities.
-        :type cost_matrix: ndarray
         :param cost_cutoff: Cost cutoff which can be used to exclude points
             from the distance matrix which feature a greater cost.
-        :type cost_cutoff: int
         :param facilities_to_choose: The amount of facilites to choose,
             must be less than n_facilities.
-        :type facilities_to_choose: int
         :param max_gap: Value indicating the tolerance for the maximum percentage deviation
             from the optimal solution cost, defaults to 0.1
-        :type max_gap: float, optional
         """
-        self.config = CONFIG(
+        self.config = Config(
             self.__class__.__name__,
             points,
             facilities,
@@ -90,32 +85,28 @@ class MAXIMIZE_COVERAGE:
             x[j] = self.model.add_var(var_type=mip.BINARY, name="x%d" % j)
 
         # Add constraints
-        self.model.add_constr(
-            mip.xsum(x[j] for j in range(J)) == self.config.facilities_to_choose
-        )
+        self.model.add_constr(mip.xsum(x[j] for j in range(J)) == self.config.facilities_to_choose)
 
         for i in range(I):
             self.model.add_constr(
-                mip.xsum(x[j] for j in np.where(self.config.cost_matrix[i] == 1)[0])
-                >= y[i]
+                mip.xsum(x[j] for j in np.where(self.config.cost_matrix[i] == 1)[0]) >= y[i]
             )
 
         self.model.objective = mip.maximize(mip.xsum(y[i] for i in range(I)))
 
-    def optimize(self, max_seconds=200):
+    def optimize(self, max_seconds=200) -> "MaximizeCoverage":
         """
         Optimize the maximum coverage problem
 
         :param max_seconds: The amount of time given to the solver, defaults to 200.
         :type max_seconds: int, optional
-        :return: Returns an instance of self consisting of
+        :return: Returns an instance of ``self`` consisting of
 
-            * the configuration <location_allocation.common.CONFIG>,
+            * the configuration class:`location_allocation.common.Config`,
 
             * mip model <mip.model.Model> (https://docs.python-mip.com/en/latest/classes.html)
 
-            * optimized facility locations. <location_allocation._maximize_coverage.RESULT>.
-        :rtype: :class:`location_allocation._maximize_coverage.MAXIMIZE_COVERAGE`
+            * optimized facility locations. class:`location_allocation._maximize_coverage.Result`.
         """
         start = time.time()
         self.model.optimize(max_seconds=max_seconds)
@@ -134,5 +125,6 @@ class MAXIMIZE_COVERAGE:
             "opt_facilities": self.config.facilities[solution],
             "opt_facilities_indexes": solution,
         }
-        self.result = RESULT(float(time.time() - start), solution)
+        self.result = Result(float(time.time() - start), solution)
+
         return self

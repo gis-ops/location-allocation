@@ -1,17 +1,16 @@
-# flake8: noqa
 import numpy as np
 import pytest
 from mip import OptimizationStatus
 from scipy.spatial import distance_matrix
 
-from location_allocation import MAXIMIZE_COVERAGE
+from location_allocation import MaximizeCoverage
 
 
 def test_maximize_coverage_near(demand, facilities):
 
     cost_matrix = distance_matrix(demand, facilities)
 
-    mclp = MAXIMIZE_COVERAGE(
+    mclp = MaximizeCoverage(
         demand,
         facilities,
         cost_matrix,
@@ -30,7 +29,7 @@ def test_maximize_coverage_far(demand, facilities):
 
     cost_matrix = distance_matrix(demand, facilities)
 
-    mclp = MAXIMIZE_COVERAGE(
+    mclp = MaximizeCoverage(
         demand,
         facilities,
         cost_matrix,
@@ -50,7 +49,7 @@ def test_maximize_coverage_too_many_facilities_to_choose(demand, facilities):
     cost_matrix = distance_matrix(demand, facilities)
 
     with pytest.raises(ValueError):
-        MAXIMIZE_COVERAGE(
+        MaximizeCoverage(
             demand,
             facilities,
             cost_matrix,
@@ -63,7 +62,7 @@ def test_maximize_coverage_too_many_facilities_to_choose(demand, facilities):
 def test_maximize_coverage_wrong_types(demand, facilities):
 
     with pytest.raises(ValueError):
-        MAXIMIZE_COVERAGE(
+        MaximizeCoverage(
             [],
             [],
             [],
