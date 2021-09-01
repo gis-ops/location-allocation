@@ -3,7 +3,7 @@ from scipy.spatial import distance_matrix
 from sklearn.datasets import make_moons
 import numpy as np
 
-from location_allocation import MAXIMIZE_COVERAGE_CAPACITATED, utils
+from location_allocation import MaximizeCoverageCapacitated, utils
 
 points, _ = make_moons(10000, noise=0.15)
 facilities = utils.generate_candidate_facilities(points, 100)
@@ -11,7 +11,7 @@ capacities = utils.generate_facility_capacities(facilities.shape[0])
 
 cost_matrix = distance_matrix(points, facilities)
 
-mcclp = MAXIMIZE_COVERAGE_CAPACITATED(
+mcclp = MaximizeCoverageCapacitated(
     points,
     facilities,
     cost_matrix,

@@ -1,17 +1,14 @@
-
-*.pyc
-.venv
+# tools
+**/*venv
 **/logs/
 .idea/
-venv/
-.venv/
-**/__pycache__/
-.coverage*
-.pytest_cache/
+.vscode
 htmlcov/
+.coverage
+.pytest_cache/
 .tox/
 .DS_Store
+
+**/__pycache__/
 results.txt
-.vscode
-poetry.lock
 **/build

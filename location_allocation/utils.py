@@ -4,7 +4,6 @@ import random
 from itertools import cycle
 
 import numpy as np
-from matplotlib import colors
 from matplotlib import pyplot as plt
 from scipy.spatial import ConvexHull
 from shapely.geometry import Point, Polygon
@@ -15,19 +14,17 @@ def generate_facility_capacities(M):
     while len(capacities) < M:
         random_capacity = random.randint(M * 0.5, M * 1.8)
         capacities.append(random_capacity)
+
     return np.array(capacities)
 
 
-def generate_candidate_facilities(points, M=100):
+def generate_candidate_facilities(points, M: int = 100) -> np.ndarray:
     """
     Generate M candidate sites with the convex hull of a point set
 
     :param points:  a Numpy array with shape of (n_points,2)
-    :type points: ndarray
     :param M: the number of candidate sites to generate
-    :type points: int
     :return: a Numpy array with shape of (M,2)
-    :rtype: ndarray
     """
     hull = ConvexHull(points)
     polygon_points = points[hull.vertices]
@@ -35,28 +32,23 @@ def generate_candidate_facilities(points, M=100):
     min_x, min_y, max_x, max_y = poly.bounds
     sites = []
     while len(sites) < M:
-        random_point = Point(
-            [np.random.uniform(min_x, max_x), np.random.uniform(min_y, max_y)]
-        )
+        random_point = Point([np.random.uniform(min_x, max_x), np.random.uniform(min_y, max_y)])
         if random_point.within(poly):
             sites.append(random_point)
+
     return np.array([(p.x, p.y) for p in sites])
 
 
-def plot_result(points, point_allocations, opt_sites, other_sites):
+def plot_result(points: np.ndarray, point_allocations: dict, opt_sites: list, other_sites: list):
     """
     Plots the result with matplotlib
 
     :param points:  a numpy array with shape of (n_points,2)
-    :type points: ndarray
-    :param point_allocations: facilitiy to point allocations
-    :type point_allocations: dict
+    :param point_allocations: facility to point allocations
     :param opt_sites: coordinates of optimital sites as numpy array
         in shape of [n_opt_sites,2]
-    :type opt_sites: list
     :param other_sites: coordinates of other sites as numpy array
         in shape of [n_other_sites,2]
-    :type other_sites: list
     """
     plt.scatter(points[:, 0], points[:, 1], c="black", s=4)
     ax = plt.gca()
@@ -83,35 +75,3 @@ def plot_result(points, point_allocations, opt_sites, other_sites):
         labelbottom=False,
     )
     plt.show()
-
-
-def custom_logger(name, debug, report=False):
-    """
-    Custom Logger
-
-    :param name: name of the logger
-    :type name: str
-    :param debug: if debug is true or false
-    :type debug: bool
-    :param report: if a logfile should be written, defaults to False
-    :type report: bool, optional
-    :return: returns the logging object
-    :rtype: object
-    """
-    formatter = logging.Formatter(
-        fmt="%(asctime)s - %(levelname)s - %(module)s - %(message)s"
-    )
-    handler = logging.StreamHandler()
-    handler.setFormatter(formatter)
-
-    logger = logging.getLogger(name)
-    if debug:
-        logger.setLevel(logging.DEBUG)
-    else:
-        logger.setLevel(logging.INFO)
-    logger.addHandler(handler)
-
-    if report:
-        logger.addHandler(logging.FileHandler("log.txt", mode="w"))
-
-    return logger

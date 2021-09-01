@@ -1,9 +1,8 @@
-# flake8: noqa
 import numpy as np
 from mip import OptimizationStatus
 from scipy.spatial import distance_matrix
 
-from location_allocation import MAXIMIZE_COVERAGE_CAPACITATED, utils
+from location_allocation import MaximizeCoverageCapacitated, utils
 
 
 def test_maximize_coverage_capacitated_full(demand, facilities, capacities):
@@ -12,7 +11,7 @@ def test_maximize_coverage_capacitated_full(demand, facilities, capacities):
 
     cost_cutoff = 15
 
-    mcclp = MAXIMIZE_COVERAGE_CAPACITATED(
+    mcclp = MaximizeCoverageCapacitated(
         demand,
         facilities,
         cost_matrix,
@@ -40,7 +39,7 @@ def test_maximize_coverage_capacitated_partial(demand, facilities, capacities):
 
     cost_matrix = distance_matrix(demand, facilities)
 
-    mcclp = MAXIMIZE_COVERAGE_CAPACITATED(
+    mcclp = MaximizeCoverageCapacitated(
         demand,
         facilities,
         cost_matrix,
