@@ -1,0 +1,15 @@
+name: location-allocation-examples
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - matplotlib
+  - shapely
+  - python
+  - jupyter
+  - scikit-learn
+  - scipy
+  - numpy
+  - mip
+  - pip:
+    - location-allocation
