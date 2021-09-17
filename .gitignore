@@ -8,7 +8,9 @@ htmlcov/
 .pytest_cache/
 .tox/
 .DS_Store
+.ipynb_checkpoints
 
 **/__pycache__/
 results.txt
 **/build
+misc
