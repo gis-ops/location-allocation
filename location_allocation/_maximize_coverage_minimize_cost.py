@@ -23,7 +23,7 @@ class MaximizeCoverageMinimizeCost:
         facilities: np.ndarray,
         cost_matrix: np.ndarray,
         cost_cutoff: int,
-        facilities_to_choose: int,
+        facilities_to_site: int,
         load_distribution_weight: int = 10,
         maximum_coverage_weight: int = 100,
         total_distance_weight: int = 1,
@@ -69,7 +69,7 @@ class MaximizeCoverageMinimizeCost:
         :param cost_cutoff: Cost cutoff which can be used to
             exclude points from the distance matrix which
             feature a greater cost.
-        :param facilities_to_choose: The amount of facilites to choose,
+        :param facilities_to_site: The amount of facilites to choose,
             must be less than n_facilities.
         :param load_distribution_weight: Una Help, defaults to 10
         :param maximum_coverage_weight: Una Help, defaults to 100
@@ -83,7 +83,7 @@ class MaximizeCoverageMinimizeCost:
             facilities,
             cost_matrix,
             cost_cutoff,
-            facilities_to_choose=facilities_to_choose,
+            facilities_to_site=facilities_to_site,
             load_distribution_weight=load_distribution_weight,
             maximum_coverage_weight=maximum_coverage_weight,
             total_distance_weight=total_distance_weight,
@@ -117,7 +117,7 @@ class MaximizeCoverageMinimizeCost:
         minLoad = self.model.add_var(var_type=mip.INTEGER, lb=-I, ub=0, name="minLoad")
 
         initialSolution = self.generate_initial_solution(
-            self.config.cost_matrix, I, J, self.config.facilities_to_choose
+            self.config.cost_matrix, I, J, self.config.facilities_to_site
         )
 
         bigM = 1000000
@@ -126,7 +126,7 @@ class MaximizeCoverageMinimizeCost:
         # Add constraints
 
         # exactly K allocated facilities
-        self.model.add_constr(mip.xsum(x[j] for j in range(J)) == self.config.facilities_to_choose)
+        self.model.add_constr(mip.xsum(x[j] for j in range(J)) == self.config.facilities_to_site)
 
         # a point cannot be allocated to facility if its not within the facility radius
         for i in range(I):
@@ -177,7 +177,7 @@ class MaximizeCoverageMinimizeCost:
         :param D: Numpy array of shape (n_points, n_facilities).
         :param I: n_points
         :param J: n_facilities
-        :param K: facilities_to_choose
+        :param K: facilities_to_site
         :return: a list of pairs (i, j) denoting that point i is covered by facility j
         """
         Is = list(range(0, I))  # list of points

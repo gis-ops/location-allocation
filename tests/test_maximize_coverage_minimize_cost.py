@@ -14,7 +14,7 @@ def test_maximize_coverage_minimize_cost_near(demand, facilities):
         facilities,
         cost_matrix,
         cost_cutoff=5,
-        facilities_to_choose=2,
+        facilities_to_site=2,
     ).optimize()
 
     assert mcmclp.model.status == OptimizationStatus.OPTIMAL
@@ -38,7 +38,7 @@ def test_maximize_coverage_minimize_cost_far(demand, facilities):
         facilities,
         cost_matrix,
         cost_cutoff=7.5,
-        facilities_to_choose=2,
+        facilities_to_site=2,
     ).optimize()
 
     assert mcmclp.model.status == OptimizationStatus.OPTIMAL

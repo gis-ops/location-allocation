@@ -37,7 +37,7 @@ class Config:
         :param **kwargs: how many facilities to choose from
 
         :raises ValueError: if points, cost_matrix, facilities is not ndarray
-        :raises ValueError: if facilities_to_choose is >= len(facilities)
+        :raises ValueError: if facilities_to_site is >= len(facilities)
         """
         # common settings for all algorithms
         self.points = points
@@ -54,7 +54,7 @@ class Config:
             "MaximizeCoverage",
             "MaximizeCoverageMinimizeCost",
         }:
-            if self.facilities_to_choose >= len(facilities):
+            if self.facilities_to_site >= len(facilities):
                 raise ValueError(
-                    f"facilities to choose is set to {self.facilities_to_choose} but must be lesser equal than facilities {len(facilities)}."
+                    f"facilities to choose is set to {self.facilities_to_site} but must be lesser equal than facilities {len(facilities)}."
                 )

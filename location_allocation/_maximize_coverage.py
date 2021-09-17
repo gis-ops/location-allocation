@@ -5,7 +5,6 @@ Maximize Coverage Location Problem
 
 import time
 from typing import List
-
 import mip as mip
 import numpy as np
 
@@ -19,7 +18,7 @@ class MaximizeCoverage:
         facilities: np.ndarray,
         cost_matrix: np.ndarray,
         cost_cutoff,
-        facilities_to_choose,
+        facilities_to_site,
         max_gap: float = 0.1,
     ):
         """
@@ -52,7 +51,7 @@ class MaximizeCoverage:
             The distance matrix of points to facilities.
         :param cost_cutoff: Cost cutoff which can be used to exclude points
             from the distance matrix which feature a greater cost.
-        :param facilities_to_choose: The amount of facilites to choose,
+        :param facilities_to_site: The amount of facilites to choose,
             must be less than n_facilities.
         :param max_gap: Value indicating the tolerance for the maximum percentage deviation
             from the optimal solution cost, defaults to 0.1
@@ -63,7 +62,7 @@ class MaximizeCoverage:
             facilities,
             cost_matrix,
             cost_cutoff,
-            facilities_to_choose=facilities_to_choose,
+            facilities_to_site=facilities_to_site,
             max_gap=max_gap,
         )
 
@@ -85,7 +84,7 @@ class MaximizeCoverage:
             x[j] = self.model.add_var(var_type=mip.BINARY, name="x%d" % j)
 
         # Add constraints
-        self.model.add_constr(mip.xsum(x[j] for j in range(J)) == self.config.facilities_to_choose)
+        self.model.add_constr(mip.xsum(x[j] for j in range(J)) == self.config.facilities_to_site)
 
         for i in range(I):
             self.model.add_constr(
@@ -119,7 +118,7 @@ class MaximizeCoverage:
                 if v.x == 1 and v.name[0] == "x":
                     solution.append(int(v.name[1:]))
 
-        # opt_facilities: the optimial facilities coordinates
+        # opt_facilities: the optimal facilities coordinates
         # opt_facilities_indexes: the optimial facilities indices
         solution = {
             "opt_facilities": self.config.facilities[solution],

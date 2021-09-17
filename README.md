@@ -4,7 +4,6 @@ Add Image
 
 This repository features a set of location-allocation algorithms to determine an optimal location for one or more facilities given a set of candidate facilities as well as a given set of demand points. Depending on the nature of the algorithm demand points are assigned to one or more facilities, taking into account factors such as the number of facilities available, their capacity, and the maximum cost from a facility to a point. Typical examples evolve around emergency response services and where to locate facilities so that the greatest number of people in a region can be reached within a given time.
 
-
 ## Installation
 
 ### Install via poetry:
@@ -19,61 +18,24 @@ This repository features a set of location-allocation algorithms to determine an
 
 `pip install git+git://github.com/gis-ops/location-allocation`
 
-## Models & Examples
+## Problem Types
 
-The `location_allocation` modules can be simply imported in your script. Somelö basic examples can be found in the `tests` folder and for more complex examples handling bigger amounts of data can be found in the `examples` folder for all problem types. Generally the problems require the following parameters:
+The `location_allocation` modules can be simply imported. Some basic examples can be found in the `tests` folder and for more complex examples handling larger amounts of data can be found in the `examples` folder as jupyter notebooks. Generally the location allocation problems require as input candidate facilities, demand points, a cost matrix, a cut off value and facilties to site. This repository features 4 different types of problems.
 
-1. Candidate facilities
-2. Demand points
-3. Cut off value
-4. Facilties to choose
+- Maximize Coverage: This problem is used to site facilities from candidate facilites covering the largest amount of demand points within a cost cutoff value.
 
-Depending on the model additional parameters are required or optional which will be explained in the following paragraphs.
+- Maximize Capacitated Coverage: This problem is used to site facilities from candidate capacity bound facilites covering the largest amount of demand points within a cost cutoff value.
 
-### Maximize Coverage
+- Maximize Coverage and Minimize Cost: This problem is used to site facilities from candidate facilites covering the largest amount of demand points and minimizing the overall cost within a cost cutoff value.
 
-TEXT
-
-```bash
-python3 ./examples/maximize_coverage.py
-```
-
-### Maximize Capacitated Coverage
-
-TEXT
-
-```bash
-python3 ./examples/maximize_coverage_capacitated.py
-```
-
-### Maximize Coverage and Minimize Cost
+- Maximize Coverage and Minimize Facilities: This problem is used to site facilities from candidate facilites covering the largest amount of demand points within a cost cutoff value. The difference to maximize coverage is that the number of facilities to be sited does not have to be specified.
 
 
-```bash
-python3 ./examples/maximize_coverage_minimize_cost.py
-```
+## Performance
 
-### Maximize Coverage and Minimize Facilities
+To give you an idea about performance we have run a set of experiments for different problem sizes. If you want to run these experiments yourself you can find the jupyter notebook in the `examples` folder.
 
-TEXT 
 
-```bash
-python3 ./examples/maximize_coverage_minimize_facilities.py
-```
-
-## Experiments
-
-To give you an idea about performance we have run a set of experiments for different problem sizes and time allocations for the solver for all models which you can find in the following table. If you want to run these experiments yourself you can find the script to do so in the `examples` folder.
-
-All models.. with
-Different problem sizes
-Different min_max_gap
-Different max_seconds
-Result
-
-## QGIS
-
-This module is part of the Open Source Network Analyst plugin for QGIS which you can find [here](https://). If you are interested in recipies how to navigate the plugin please visit our [website](https://networkanalyst.gis-ops.com). 
 
 ## Contributing
 

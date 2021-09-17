@@ -80,8 +80,7 @@ cd docs
 make html
 ```
 
-The documentation will have been added to `location-allocation/docs/build/html` and you can open `index.html` in your web browser to view
-the changes. 
+The documentation will have been added to `location-allocation/docs/build/html` and you can open `index.html` in your web browser to view the changes. 
 
 We realize that *re-structured text* is not the most user-friendly format, but it is the currently best available
 documentation format for Python projects. You'll find lots of copy/paste material in the existing implementations.

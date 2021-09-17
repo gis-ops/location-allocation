@@ -15,7 +15,7 @@ def test_maximize_coverage_near(demand, facilities):
         facilities,
         cost_matrix,
         cost_cutoff=1,
-        facilities_to_choose=2,
+        facilities_to_site=2,
         max_gap=0.1,
     ).optimize()
     print(mclp.config)
@@ -34,7 +34,7 @@ def test_maximize_coverage_far(demand, facilities):
         facilities,
         cost_matrix,
         cost_cutoff=5,
-        facilities_to_choose=2,
+        facilities_to_site=2,
         max_gap=0.1,
     ).optimize()
 
@@ -44,7 +44,7 @@ def test_maximize_coverage_far(demand, facilities):
     assert mclp.model.status == OptimizationStatus.OPTIMAL
 
 
-def test_maximize_coverage_too_many_facilities_to_choose(demand, facilities):
+def test_maximize_coverage_too_many_facilities_to_site(demand, facilities):
 
     cost_matrix = distance_matrix(demand, facilities)
 
@@ -54,7 +54,7 @@ def test_maximize_coverage_too_many_facilities_to_choose(demand, facilities):
             facilities,
             cost_matrix,
             cost_cutoff=5,
-            facilities_to_choose=30,
+            facilities_to_site=30,
             max_gap=0.1,
         ).optimize()
 
@@ -67,6 +67,6 @@ def test_maximize_coverage_wrong_types(demand, facilities):
             [],
             [],
             cost_cutoff=5,
-            facilities_to_choose=30,
+            facilities_to_site=30,
             max_gap=0.1,
         ).optimize()

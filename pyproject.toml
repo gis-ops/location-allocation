@@ -11,10 +11,12 @@ packages = [{include = "location_allocation"}]
 
 [tool.poetry.dependencies]
 python = ">=3.7,<3.10"
-matplotlib = "^3.4.2"
 mip = "^1.13.0"
 numpy = "^1.20.3"
-Shapely = "^1.7.1"
+scikit-learn = {version = "^0.24.2", optional = true}
+scipy = {version = "^1.7.1", optional = true}
+matplotlib = {version = "^3.4.3", optional = true}
+Shapely = {version = "^1.7.1", optional = true}
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.0"
@@ -26,11 +28,13 @@ flake8-docstrings = "^1.5.0"
 darglint = "^1.7.0"
 tox = "^3.23.0"
 tox-pyenv = "^1.1.0"
-scipy = "^1.6.3"
 sphinx-rtd-theme = "^0.5.2"
 Sphinx = "^4.1.1"
 # if this updates we better also update the pre-commit.yaml
 black = "21.7b0"
+
+[tool.poetry.extras]
+notebooks = ["ipykernel", "matplotlib", "shapely", "scikit-learn", "scipy", "numpy"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

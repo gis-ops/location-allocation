@@ -12,7 +12,6 @@ import logging
 import random
 import time
 from typing import Dict, List
-
 import mip as mip
 import numpy as np
 
@@ -29,7 +28,7 @@ class MaximizeCoverageCapacitated:
         cost_matrix: np.ndarray,
         cost_cutoff: int,
         capacities: np.ndarray,
-        facilities_to_choose: int,
+        facilities_to_site: int,
         max_gap: float = 0.1,
     ):
         """
@@ -66,7 +65,7 @@ class MaximizeCoverageCapacitated:
             from the distance matrix which feature a greater cost.
         :param capacities: Numpy array of shape (n_capacities, ).
             Must be the same length as facilities with capacities as integers.
-        :param facilities_to_choose: The amount of facilites to choose,
+        :param facilities_to_site: The amount of facilites to choose,
             must be less than n_facilities.
         :param max_gap: Value indicating the tolerance for the maximum percentage deviation
             from the optimal solution cost, defaults to 0.1
@@ -78,7 +77,7 @@ class MaximizeCoverageCapacitated:
             cost_matrix,
             cost_cutoff,
             capacities=capacities,
-            facilities_to_choose=facilities_to_choose,
+            facilities_to_site=facilities_to_site,
             max_gap=max_gap,
         )
 
@@ -109,14 +108,14 @@ class MaximizeCoverageCapacitated:
             I,
             J,
             self.config.capacities,
-            self.config.facilities_to_choose,
+            self.config.facilities_to_site,
         )
 
         bigM = 1000000
         epsilon = 0.001
 
         # exactly K allocated facilities
-        self.model.add_constr(mip.xsum(x[j] for j in range(J)) == self.config.facilities_to_choose)
+        self.model.add_constr(mip.xsum(x[j] for j in range(J)) == self.config.facilities_to_site)
 
         # a point cannot be allocated to facility if its not within the facility radius
         for i in range(I):
@@ -154,7 +153,7 @@ class MaximizeCoverageCapacitated:
         :param I: n_points
         :param J: n_facilities
         :param C: Capacity for each facility of shape (n_facilities_capacities, )
-        :param K: facilities_to_choose
+        :param K: facilities_to_site
         :return: a list of pairs (i, j) denoting that point i is covered by facility j
         """
         Is = list(range(0, I))  # list of points

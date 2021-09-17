@@ -2,7 +2,9 @@ import numpy as np
 from mip import OptimizationStatus
 from scipy.spatial import distance_matrix
 
-from location_allocation import MaximizeCoverageCapacitated, utils
+from location_allocation import MaximizeCoverageCapacitated
+
+# from ..examples import utils
 
 
 def test_maximize_coverage_capacitated_full(demand, facilities, capacities):
@@ -17,7 +19,7 @@ def test_maximize_coverage_capacitated_full(demand, facilities, capacities):
         cost_matrix,
         cost_cutoff,
         capacities,
-        facilities_to_choose=2,
+        facilities_to_site=2,
     )
     mcclp.optimize()
 
@@ -45,7 +47,7 @@ def test_maximize_coverage_capacitated_partial(demand, facilities, capacities):
         cost_matrix,
         cost_cutoff=2.5,
         capacities=capacities,
-        facilities_to_choose=2,
+        facilities_to_site=2,
     )
     mcclp.optimize()
 
