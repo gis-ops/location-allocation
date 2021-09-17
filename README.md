@@ -35,9 +35,15 @@ The `location_allocation` modules can be simply imported. Some basic examples ca
 
 To give you an idea about performance we have run a set of experiments for different problem sizes. If you want to run these experiments yourself you can find the jupyter notebook in the `examples` folder.
 
+![Maximize Coverage Performance](/examples/img/maximize_coverage.png?raw=true "Maximize Coverage")
 
+![Maximize Capacitated Coverage Performance](/examples/img/maximize_coverage_capacitated.png?raw=true "Maximize Capacitated Coverage")
+
+![Maximize Coverage Minimize Cost Performance](/examples/img/maximize_coverage_minimize_cost.png?raw=true "Maximize Coverage Minimize Cost")
+
+![Maximize Coverage Minimize Facilities Performance](/examples/img/maximize_coverage_minimize_facilities.png?raw=true "Maximize Coverage Minimize Facilities")
 
 ## Contributing
 
-We appreciate any kind of feature requests or ideas for improvements. If you are planning to raise a pull request we created a (contribution guideline)[https://github.com/gis-ops/location-allocation/blob/master/CONTRIBUTING.md].
+We appreciate any kind of feature requests or ideas for improvements. If you are planning to raise a pull request we created a [contribution guideline](https://github.com/gis-ops/location-allocation/blob/master/CONTRIBUTING.md).
 
