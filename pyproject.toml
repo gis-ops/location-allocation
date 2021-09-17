@@ -26,8 +26,6 @@ pre-commit = "^1.18.3"
 flake8 = "^3.8.4"
 flake8-docstrings = "^1.5.0"
 darglint = "^1.7.0"
-tox = "^3.23.0"
-tox-pyenv = "^1.1.0"
 sphinx-rtd-theme = "^0.5.2"
 Sphinx = "^4.1.1"
 # if this updates we better also update the pre-commit.yaml
