@@ -56,7 +56,7 @@ To give you an idea about performance we have run a set of experiments for diffe
 
 ## Build status
 
-[![Github Actions Status](https://github.com/gis-ops/location-allocation/workflows/CI/badge.svg?branch=master)](https://github.com/gis-ops/location-allocation/actions)
+[![Github Actions Status](https://github.com/gis-ops/location-allocation/workflows/tests/badge.svg?branch=master)](https://github.com/gis-ops/location-allocation/actions)
 [![Current version](https://badge.fury.io/gh/gis-ops%2Flocation-allocation.svg)](https://github.com/gis-ops/location-allocation/releases)
 [![License](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/gis-ops/location-allocation/blob/master/LICENSE)
 [![Documentation Status](https://readthedocs.org/projects/location-allocation/badge/?version=latest)](https://location-allocation.readthedocs.io/en/latest/?badge=latest)

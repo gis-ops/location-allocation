@@ -40,6 +40,7 @@ class MaximizeCoverageMinimizeCost:
 
         Let K be the number of facilities to select for location coverage. The problem is to allocate
         locations to a selection of K facilities such that:
+
             1. the location coverage is maximized;
             2. the total distance from location to facility is minimized; and
             3. the difference between f_max and f_min is minimized,

@@ -33,7 +33,7 @@ Location Allocation Problems
 Configuration Object
 ----------------------------
 
-.. autoclass:: location_allocation.common.CONFIG
+.. autoclass:: location_allocation.common.Config
    :members:
 
    .. automethod:: __init__
@@ -42,7 +42,7 @@ Configuration Object
 Maximize Coverage
 -----------------
 
-.. autoclass:: location_allocation.MAXIMIZE_COVERAGE
+.. autoclass:: location_allocation.MaximizeCoverage
    :members:
 
    .. automethod:: __init__
@@ -50,7 +50,7 @@ Maximize Coverage
 Maximize Capacitated Coverage
 -----------------------------
 
-.. autoclass:: location_allocation.MAXIMIZE_COVERAGE_CAPACITATED
+.. autoclass:: location_allocation.MaximizeCoverageCapacitated
    :members:
 
    .. automethod:: __init__
@@ -58,7 +58,7 @@ Maximize Capacitated Coverage
 Maximize Coverage Minimize Cost
 -------------------------------
     
-.. autoclass:: location_allocation.MAXIMIZE_COVERAGE_MINIMIZE_COST
+.. autoclass:: location_allocation.MaximizeCoverageMinimizeCost
     :members:
 
     .. automethod:: __init__
@@ -66,7 +66,7 @@ Maximize Coverage Minimize Cost
 Maximize Coverage Minimize Facilities
 -------------------------------------
 
-.. autoclass:: location_allocation.MAXIMIZE_COVERAGE_MINIMIZE_FACILITIES
+.. autoclass:: location_allocation.MaximizeCoverageMinimizeFacilities
     :members:
 
     .. automethod:: __init__
@@ -75,7 +75,7 @@ Maximize Coverage Minimize Facilities
 Result Object
 -------------
 
-.. autoclass:: location_allocation.common.RESULT
+.. autoclass:: location_allocation.common.Result
     :members:
 
     .. automethod:: __init__
