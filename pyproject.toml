@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "location-allocation"
 version = "0.1.0"
-description = ""
+description = "location-allocation problems using mixed integer programming: open source and in python."
 authors = ["Timothy Ellersiek <tim@gis-ops.com>"]
 
 readme = "README.md"
@@ -22,7 +22,6 @@ Shapely = {version = "^1.7.1", optional = true}
 pytest = "^6.0"
 pytest-cov = "^2.10"
 isort = "^4.3.21"
-pre-commit = "^1.18.3"
 flake8 = "^3.8.4"
 flake8-docstrings = "^1.5.0"
 darglint = "^1.7.0"
@@ -30,6 +29,7 @@ sphinx-rtd-theme = "^0.5.2"
 Sphinx = "^4.1.1"
 # if this updates we better also update the pre-commit.yaml
 black = "21.7b0"
+pre-commit = "^2.15.0"
 
 [tool.poetry.extras]
 notebooks = ["ipykernel", "matplotlib", "shapely", "scikit-learn", "scipy", "numpy"]
