@@ -44,10 +44,11 @@ class MaximizeCoverageMinimizeFacilities:
 
         **Notes**
 
-        * Demand points exceeding the facilities cost cutoffs are not considered.
+        * Allocation of a demand point to a facility is disregarded if the maximum distance between the facility and the demand point is exceeded.
+        I.e., if the demand point is not within the distance cutoff of the facility.
 
-        * Demand points within the cost cutoff of 2 or more facilities is allocated to the nearest facility.
-
+        * Demand points within the distance cutoff of 2 or more facilities is allocated to the nearest facility.
+        
         * The number of facilities will be reduced if the cost of having one extra facility outweighs the
           benefit of having X locations covered. This decision is dependent on the penalty weights for number
           of facilities and location coverage. As an example: if :code:`facility_minimisation_weight` is set to 10 and
@@ -57,8 +58,8 @@ class MaximizeCoverageMinimizeFacilities:
         :param facilities: Numpy array of shape (n_facilities, 2).
         :param dist_matrix: Numpy array of shape (n_points, n_facilities).
             The distance matrix of points to facilities.
-        :param dist_cutoff: Cost cutoff which can be used to exclude points
-            from the distance matrix which feature a greater cost.
+        :param dist_cutoff: Excludes from consideration (location, facility) pairs that are more
+         than a maximum distance apart.
         :param facility_minimisation_weight: This value controls the importance
             of minimizing facilities, defaults to 10
         :param coverage_maximisation_weight: This value controls the importance
@@ -203,7 +204,7 @@ class MaximizeCoverageMinimizeFacilities:
 
             * mip model <mip.model.Model> (https://docs.python-mip.com/en/latest/classes.html)
 
-            * points to facility allocations :class:`location_allocation._maximize_coverage_minimize_facilities.Result`.
+            * points to facility allocations :class:`location_allocation.common.Result`.
         """
         start = time.time()
         self.model.optimize(max_seconds=max_seconds)
