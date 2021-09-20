@@ -28,17 +28,17 @@ jobs:
         shell: bash
     strategy:
       matrix:
-        python_version: [3.7, 3.8, 3.9, 'pypy-3.7']
+        python_version: [3.7, 3.8, 3.9, 'pypy-3.8']
         os: [macos-latest, ubuntu-18.04, ubuntu-16.04, ubuntu-20.04, windows-2019, windows-2016]
         exclude:
           # excludes pypy Windows because only 32 bit pypy is supported.
           - os: windows-2019
-            python_version: pypy-3.7
+            python_version: pypy-3.8
           - os: windows-2016
-            python_version: pypy-3.7
+            python_version: pypy-3.8
           # temporarily exclude pypy3 on macos
           - os: macos-latest
-            python_version: pypy-3.7
+            python_version: pypy-3.8
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python_version }}
