@@ -64,31 +64,16 @@ jobs:
     - name: Install dependencies
       run: poetry install
     - name: Install dependencies
-      - run: |
-          source .venv/scripts/activate
-          poetry install
-        if: runner.os == 'Windows'
-      - run: |
-          source .venv/bin/activate
-          poetry install
-        if: runner.os != 'Windows'
+      run: |
+        source $VENV
+        poetry install
     - name: style & lint checks
-      - run: |
-          source .venv/scripts/activate
-          pre-commit run
-        if: runner.os == 'Windows'
-      - run: |
-          source .venv/bin/activate
-          pre-commit run
-        if: runner.os != 'Windows'
+      run: |
+        source $VENV
+        pre-commit run
     - name: pytest
-      - run: |
-          source .venv/scripts/activate
-          pytest --cov=location_allocation tests/
-        if: runner.os == 'Windows'
-      - run: |
-          source .venv/bin/activate
-          pytest --cov=location_allocation tests/
-        if: runner.os != 'Windows' 
+      run: |
+        source $VENV
+        pytest --cov=location_allocation tests/
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
