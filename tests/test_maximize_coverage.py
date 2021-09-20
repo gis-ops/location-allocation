@@ -8,13 +8,13 @@ from location_allocation import MaximizeCoverage
 
 def test_maximize_coverage_near(demand, facilities):
 
-    cost_matrix = distance_matrix(demand, facilities)
+    dist_matrix = distance_matrix(demand, facilities)
 
     mclp = MaximizeCoverage(
         demand,
         facilities,
-        cost_matrix,
-        cost_cutoff=1,
+        dist_matrix,
+        dist_cutoff=1,
         facilities_to_site=2,
         max_gap=0.1,
     ).optimize()
@@ -27,13 +27,13 @@ def test_maximize_coverage_near(demand, facilities):
 
 def test_maximize_coverage_far(demand, facilities):
 
-    cost_matrix = distance_matrix(demand, facilities)
+    dist_matrix = distance_matrix(demand, facilities)
 
     mclp = MaximizeCoverage(
         demand,
         facilities,
-        cost_matrix,
-        cost_cutoff=5,
+        dist_matrix,
+        dist_cutoff=5,
         facilities_to_site=2,
         max_gap=0.1,
     ).optimize()
@@ -46,14 +46,14 @@ def test_maximize_coverage_far(demand, facilities):
 
 def test_maximize_coverage_too_many_facilities_to_site(demand, facilities):
 
-    cost_matrix = distance_matrix(demand, facilities)
+    dist_matrix = distance_matrix(demand, facilities)
 
     with pytest.raises(ValueError):
         MaximizeCoverage(
             demand,
             facilities,
-            cost_matrix,
-            cost_cutoff=5,
+            dist_matrix,
+            dist_cutoff=5,
             facilities_to_site=30,
             max_gap=0.1,
         ).optimize()
@@ -66,7 +66,7 @@ def test_maximize_coverage_wrong_types(demand, facilities):
             [],
             [],
             [],
-            cost_cutoff=5,
+            dist_cutoff=5,
             facilities_to_site=30,
             max_gap=0.1,
         ).optimize()

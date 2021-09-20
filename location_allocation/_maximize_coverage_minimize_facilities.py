@@ -20,8 +20,8 @@ class MaximizeCoverageMinimizeFacilities:
         self,
         points: np.ndarray,
         facilities: np.ndarray,
-        cost_matrix: np.ndarray,
-        cost_cutoff: int,
+        dist_matrix: np.ndarray,
+        dist_cutoff: int,
         max_facilities: Optional[int] = None,
         facility_minimisation_weight: int = 10,
         coverage_maximisation_weight: int = 1,
@@ -47,9 +47,8 @@ class MaximizeCoverageMinimizeFacilities:
         * Allocation of a demand point to a facility is disregarded if the maximum distance between the facility and the demand point is exceeded.
         I.e., if the demand point is not within the distance cutoff of the facility.
 
-
         * Demand points within the distance cutoff of 2 or more facilities is allocated to the nearest facility.
-
+        
         * The number of facilities will be reduced if the cost of having one extra facility outweighs the
           benefit of having X locations covered. This decision is dependent on the penalty weights for number
           of facilities and location coverage. As an example: if :code:`facility_minimisation_weight` is set to 10 and
@@ -57,9 +56,9 @@ class MaximizeCoverageMinimizeFacilities:
 
         :param points:  Numpy array of shape (n_points, 2).
         :param facilities: Numpy array of shape (n_facilities, 2).
-        :param cost_matrix: Numpy array of shape (n_points, n_facilities).
+        :param dist_matrix: Numpy array of shape (n_points, n_facilities).
             The distance matrix of points to facilities.
-        :param cost_cutoff: Excludes from consideration (location, facility) pairs that are more
+        :param dist_cutoff: Excludes from consideration (location, facility) pairs that are more
          than a maximum distance apart.
         :param facility_minimisation_weight: This value controls the importance
             of minimizing facilities, defaults to 10
@@ -74,8 +73,8 @@ class MaximizeCoverageMinimizeFacilities:
             self.__class__.__name__,
             points,
             facilities,
-            cost_matrix,
-            cost_cutoff,
+            dist_matrix,
+            dist_cutoff,
             facility_minimisation_weight=facility_minimisation_weight,
             coverage_maximisation_weight=coverage_maximisation_weight,
             max_facilities=max_facilities,
@@ -87,9 +86,9 @@ class MaximizeCoverageMinimizeFacilities:
         I = self.config.points.shape[0]
         J = self.config.facilities.shape[0]
 
-        mask1 = self.config.cost_matrix <= self.config.cost_cutoff
-        self.config.cost_matrix[mask1] = 1
-        self.config.cost_matrix[~mask1] = 0
+        mask1 = self.config.dist_matrix <= self.config.dist_cutoff
+        self.config.dist_matrix[mask1] = 1
+        self.config.dist_matrix[~mask1] = 0
 
         self.model = mip.Model()
         # Add variables
@@ -113,7 +112,7 @@ class MaximizeCoverageMinimizeFacilities:
             K = J
         # K should not be too large otherwise it becomes fairly slow
         initialSolution = self.generate_initial_solution(
-            self.config.cost_matrix, I, J, 10 if K > 10 else K
+            self.config.dist_matrix, I, J, 10 if K > 10 else K
         )
 
         bigM = 1000000
@@ -122,13 +121,13 @@ class MaximizeCoverageMinimizeFacilities:
         # Add constraints
         # a point cannot be allocated to facility if its not within the facility radius
         for i in range(I):
-            for j in np.where(self.config.cost_matrix[i] == 0)[0]:
+            for j in np.where(self.config.dist_matrix[i] == 0)[0]:
                 self.model.add_constr(z[i, j] == 0)
 
         # if point is covered, it needs to be covered by at least one facility
         for i in range(I):
             self.model.add_constr(
-                mip.xsum(z[i, j] for j in np.where(self.config.cost_matrix[i] == 1)[0]) >= y[i]
+                mip.xsum(z[i, j] for j in np.where(self.config.dist_matrix[i] == 1)[0]) >= y[i]
             )
 
         # if at least one point is allocated to facility, the facility must be considered as allocated: for all j \in J sum(z_ij) >= 1 TRUEIFF xj = true
@@ -205,7 +204,7 @@ class MaximizeCoverageMinimizeFacilities:
 
             * mip model <mip.model.Model> (https://docs.python-mip.com/en/latest/classes.html)
 
-            * points to facility allocations :class:`location_allocation._maximize_coverage_minimize_facilities.Result`.
+            * points to facility allocations :class:`location_allocation.common.Result`.
         """
         start = time.time()
         self.model.optimize(max_seconds=max_seconds)

@@ -25,8 +25,8 @@ class MaximizeCoverageCapacitated:
         self,
         points: np.ndarray,
         facilities: np.ndarray,
-        cost_matrix: np.ndarray,
-        cost_cutoff: int,
+        dist_matrix: np.ndarray,
+        dist_cutoff: int,
         capacities: np.ndarray,
         facilities_to_site: int,
         max_gap: float = 0.1,
@@ -58,9 +58,9 @@ class MaximizeCoverageCapacitated:
 
         :param points: Numpy array of shape (n_points, 2).
         :param facilities: Numpy array of shape (n_facilities, 2).
-        :param cost_matrix: Numpy array of shape (n_points, n_facilities).
+        :param dist_matrix: Numpy array of shape (n_points, n_facilities).
             The distance matrix of points to facilities.
-        :param cost_cutoff: distance cutoff which excludes from consideration (location, facility) pairs that are more
+        :param dist_cutoff: distance cutoff which excludes from consideration (location, facility) pairs that are more
          than a maximum distance apart.
         :param capacities: Numpy array of shape (n_capacities, ).
             Must be the same length as facilities with capacities as integers.
@@ -73,8 +73,8 @@ class MaximizeCoverageCapacitated:
             self.__class__.__name__,
             points,
             facilities,
-            cost_matrix,
-            cost_cutoff,
+            dist_matrix,
+            dist_cutoff,
             capacities=capacities,
             facilities_to_site=facilities_to_site,
             max_gap=max_gap,
@@ -84,9 +84,9 @@ class MaximizeCoverageCapacitated:
 
         I = self.config.points.shape[0]
         J = self.config.facilities.shape[0]
-        mask1 = self.config.cost_matrix <= self.config.cost_cutoff
-        self.config.cost_matrix[mask1] = 1
-        self.config.cost_matrix[~mask1] = 0
+        mask1 = self.config.dist_matrix <= self.config.dist_cutoff
+        self.config.dist_matrix[mask1] = 1
+        self.config.dist_matrix[~mask1] = 0
 
         self.model = mip.Model()
         x = {}  # is facility at site used
@@ -103,7 +103,7 @@ class MaximizeCoverageCapacitated:
                 z[i, j] = self.model.add_var(var_type=mip.BINARY, name="z" + str(i) + "_" + str(j))
 
         initial_solution = self.generate_initial_solution(
-            self.config.cost_matrix,
+            self.config.dist_matrix,
             I,
             J,
             self.config.capacities,
@@ -118,13 +118,13 @@ class MaximizeCoverageCapacitated:
 
         # a point cannot be allocated to facility if its not within the facility radius
         for i in range(I):
-            for j in np.where(self.config.cost_matrix[i] == 0)[0]:
+            for j in np.where(self.config.dist_matrix[i] == 0)[0]:
                 self.model.add_constr(z[i, j] == 0)
 
         # if point is covered, it needs to be covered by at least one facility
         for i in range(I):
             self.model.add_constr(
-                mip.xsum(z[i, j] for j in np.where(self.config.cost_matrix[i] == 1)[0]) >= y[i]
+                mip.xsum(z[i, j] for j in np.where(self.config.dist_matrix[i] == 1)[0]) >= y[i]
             )
 
         # the number of points allocated to facility must not exceed facility capacity
@@ -201,7 +201,7 @@ class MaximizeCoverageCapacitated:
 
             * mip model <mip.model.Model> (https://docs.python-mip.com/en/latest/classes.html)
 
-            * points to facility allocations :class:`location_allocation._maximize_coverage_capacitated.Result`
+            * points to facility allocations :class:`location_allocation.common.Result`
         """
         start = time.time()
         self.model.optimize(max_seconds=max_seconds)

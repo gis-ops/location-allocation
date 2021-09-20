@@ -16,8 +16,8 @@ class MaximizeCoverage:
         self,
         points: np.ndarray,
         facilities: np.ndarray,
-        cost_matrix: np.ndarray,
-        cost_cutoff,
+        dist_matrix: np.ndarray,
+        dist_cutoff,
         facilities_to_site,
         max_gap: float = 0.1,
     ):
@@ -48,9 +48,9 @@ class MaximizeCoverage:
 
         :param points:  Numpy array of shape (n_points, 2).
         :param facilities: Numpy array of shape (n_facilities, 2).
-        :param cost_matrix: Numpy array of shape (n_points, n_facilities).
+        :param dist_matrix: Numpy array of shape (n_points, n_facilities).
             The distance matrix of points to facilities.
-        :param cost_cutoff: distance cutoff which excludes from consideration (location, facility) pairs that are more
+        :param dist_cutoff: distance cutoff which excludes from consideration (location, facility) pairs that are more
          than a maximum distance apart.
         :param facilities_to_site: The amount of facilites to choose,
             must be less than n_facilities.
@@ -61,8 +61,8 @@ class MaximizeCoverage:
             self.__class__.__name__,
             points,
             facilities,
-            cost_matrix,
-            cost_cutoff,
+            dist_matrix,
+            dist_cutoff,
             facilities_to_site=facilities_to_site,
             max_gap=max_gap,
         )
@@ -70,9 +70,9 @@ class MaximizeCoverage:
         I = self.config.points.shape[0]
         J = self.config.facilities.shape[0]
 
-        mask1 = self.config.cost_matrix <= self.config.cost_cutoff
-        self.config.cost_matrix[mask1] = 1
-        self.config.cost_matrix[~mask1] = 0
+        mask1 = self.config.dist_matrix <= self.config.dist_cutoff
+        self.config.dist_matrix[mask1] = 1
+        self.config.dist_matrix[~mask1] = 0
 
         # Build model
         self.model = mip.Model()
@@ -89,7 +89,7 @@ class MaximizeCoverage:
 
         for i in range(I):
             self.model.add_constr(
-                mip.xsum(x[j] for j in np.where(self.config.cost_matrix[i] == 1)[0]) >= y[i]
+                mip.xsum(x[j] for j in np.where(self.config.dist_matrix[i] == 1)[0]) >= y[i]
             )
 
         self.model.objective = mip.maximize(mip.xsum(y[i] for i in range(I)))
@@ -106,7 +106,7 @@ class MaximizeCoverage:
 
             * mip model <mip.model.Model> (https://docs.python-mip.com/en/latest/classes.html)
 
-            * optimized facility locations. class:`location_allocation._maximize_coverage.Result`.
+            * optimized facility locations. class:`location_allocation.common.Result`.
         """
         start = time.time()
         self.model.optimize(max_seconds=max_seconds)

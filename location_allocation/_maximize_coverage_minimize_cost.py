@@ -21,8 +21,8 @@ class MaximizeCoverageMinimizeCost:
         self,
         points: np.ndarray,
         facilities: np.ndarray,
-        cost_matrix: np.ndarray,
-        cost_cutoff: int,
+        dist_matrix: np.ndarray,
+        dist_cutoff: int,
         facilities_to_site: int,
         load_distribution_weight: int = 10,
         maximum_coverage_weight: int = 100,
@@ -40,6 +40,7 @@ class MaximizeCoverageMinimizeCost:
 
         Let K be the number of facilities to select for location coverage. The problem is to allocate
         locations to a selection of K facilities such that:
+
             1. the location coverage is maximized;
             2. the total distance from location to facility is minimized; and
             3. the difference between f_max and f_min is minimized,
@@ -56,17 +57,15 @@ class MaximizeCoverageMinimizeCost:
 
         * Allocation of a demand point to a facility is disregarded if the maximum distance between the facility and the demand point is exceeded.
         I.e., if the demand point is not within the distance cutoff of the facility.
-
         * Demand points within the cost cutoff of 2 or more facilities is allocated to the nearest facility.
 
-        * Una help: Some examples like in minimize_facilities
 
         :param points: Numpy array of shape (n_points, 2).
         :param facilities: Numpy array of shape (n_facilities, 2).
-        :param cost_matrix: Numpy array of shape (n_points, n_facilities).
+        :param dist_matrix: Numpy array of shape (n_points, n_facilities).
             The distance matrix of points to facilities.
-        :param cost_cutoff: Excludes from consideration (location, facility) pairs that are more
-         than a maximum distance apart.
+        :param dist_cutoff: Excludes from consideration (location, facility) pairs that are more
+            than a maximum distance apart.
         :param facilities_to_site: The amount of facilites to choose,
             must be less than n_facilities.
         :param load_distribution_weight: penalty weight that is multiplied by (maxLoad - minLoad), where maxLoad and minLoad are
@@ -82,8 +81,8 @@ class MaximizeCoverageMinimizeCost:
             self.__class__.__name__,
             points,
             facilities,
-            cost_matrix,
-            cost_cutoff,
+            dist_matrix,
+            dist_cutoff,
             facilities_to_site=facilities_to_site,
             load_distribution_weight=load_distribution_weight,
             maximum_coverage_weight=maximum_coverage_weight,
@@ -95,10 +94,10 @@ class MaximizeCoverageMinimizeCost:
 
         I = self.config.points.shape[0]
         J = self.config.facilities.shape[0]
-        Dist = self.config.cost_matrix
-        mask1 = self.config.cost_matrix <= self.config.cost_cutoff
-        self.config.cost_matrix[mask1] = 1
-        self.config.cost_matrix[~mask1] = 0
+        Dist = self.config.dist_matrix
+        mask1 = self.config.dist_matrix <= self.config.dist_cutoff
+        self.config.dist_matrix[mask1] = 1
+        self.config.dist_matrix[~mask1] = 0
 
         self.model = mip.Model()
         x = {}  # is facility at site used
@@ -118,7 +117,7 @@ class MaximizeCoverageMinimizeCost:
         minLoad = self.model.add_var(var_type=mip.INTEGER, lb=-I, ub=0, name="minLoad")
 
         initialSolution = self.generate_initial_solution(
-            self.config.cost_matrix, I, J, self.config.facilities_to_site
+            self.config.dist_matrix, I, J, self.config.facilities_to_site
         )
 
         bigM = 1000000
@@ -131,13 +130,13 @@ class MaximizeCoverageMinimizeCost:
 
         # a point cannot be allocated to facility if its not within the facility radius
         for i in range(I):
-            for j in np.where(self.config.cost_matrix[i] == 0)[0]:
+            for j in np.where(self.config.dist_matrix[i] == 0)[0]:
                 self.model.add_constr(z[i, j] == 0)
 
         # if point is covered, it needs to be covered by at least one facility
         for i in range(I):
             self.model.add_constr(
-                mip.xsum(z[i, j] for j in np.where(self.config.cost_matrix[i] == 1)[0]) >= y[i]
+                mip.xsum(z[i, j] for j in np.where(self.config.dist_matrix[i] == 1)[0]) >= y[i]
             )
 
         # if at least one point is allocated to facility, the facility must be considered as allocated: for all j \in J sum(z_ij) >= 1 TRUEIFF xj = true
@@ -223,11 +222,11 @@ class MaximizeCoverageMinimizeCost:
         :param max_seconds: The amount of time given to the solver, defaults to 200.
         :return: Returns an instance of self consisting of
 
-            * the configuration <location_allocation.common.CONFIG>,
+            * the configuration <location_allocation.common.Config>,
 
             * mip model <mip.model.Model> (https://docs.python-mip.com/en/latest/classes.html)
 
-            * points to facility allocations <location_allocation._maximize_coverage_minimize_cost.RESULT>.
+            * points to facility allocations <location_allocation.MaximizeCoverageMinimizeCost.Result>.
         """
         start = time.time()
         self.model.optimize(max_seconds=max_seconds)

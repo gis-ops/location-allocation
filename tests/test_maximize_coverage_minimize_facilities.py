@@ -7,13 +7,13 @@ from location_allocation import MaximizeCoverageMinimizeFacilities
 
 def test_maximize_coverage_minimize_facilities_near(demand, facilities):
 
-    cost_matrix = distance_matrix(demand, facilities)
+    dist_matrix = distance_matrix(demand, facilities)
 
     mcmclp = MaximizeCoverageMinimizeFacilities(
         demand,
         facilities,
-        cost_matrix,
-        cost_cutoff=5,
+        dist_matrix,
+        dist_cutoff=5,
         max_facilities=2,
     ).optimize()
 
@@ -30,13 +30,13 @@ def test_maximize_coverage_minimize_facilities_near(demand, facilities):
 
 def test_maximize_coverage_minimize_facilities_far(demand, facilities):
 
-    cost_matrix = distance_matrix(demand, facilities)
+    dist_matrix = distance_matrix(demand, facilities)
 
     mcmclp = MaximizeCoverageMinimizeFacilities(
         demand,
         facilities,
-        cost_matrix,
-        cost_cutoff=15,
+        dist_matrix,
+        dist_cutoff=15,
         max_facilities=2,
     ).optimize()
 
@@ -48,13 +48,13 @@ def test_maximize_coverage_minimize_facilities_far(demand, facilities):
 
 def test_maximize_coverage_minimize_facilities_force_minimization(demand, facilities):
 
-    cost_matrix = distance_matrix(demand, facilities)
+    dist_matrix = distance_matrix(demand, facilities)
 
     mcmclp = MaximizeCoverageMinimizeFacilities(
         demand,
         facilities,
-        cost_matrix,
-        cost_cutoff=5,
+        dist_matrix,
+        dist_cutoff=5,
         facility_minimisation_weight=10,
         coverage_maximisation_weight=1,
     ).optimize()
@@ -72,13 +72,13 @@ def test_maximize_coverage_minimize_facilities_force_minimization(demand, facili
 
 def test_maximize_coverage_minimize_facilities_force_coverage(demand, facilities):
 
-    cost_matrix = distance_matrix(demand, facilities)
+    dist_matrix = distance_matrix(demand, facilities)
 
     mcmclp = MaximizeCoverageMinimizeFacilities(
         demand,
         facilities,
-        cost_matrix,
-        cost_cutoff=5,
+        dist_matrix,
+        dist_cutoff=5,
         facility_minimisation_weight=10,
         coverage_maximisation_weight=100,
     ).optimize()
