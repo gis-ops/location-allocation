@@ -33,8 +33,8 @@ class MaximizeCoverageMinimizeCost:
         **Maximum Coverage Minimum Cost Coverage Location Problem**
 
         The result of this computation is a given subset of candidate facilities such
-        that as many demand points as possible are allocated to these within the cost cutoff value
-        and thereby minimizing the distance of these demand points.
+        that as many demand points as possible are allocated to these within the distance cutoff value,
+         while minimizing the distance of these demand points to the corresponding facility.
 
         **Problem Objective**
 
@@ -55,7 +55,8 @@ class MaximizeCoverageMinimizeCost:
 
         **Notes**
 
-        * Demand points exceeding the facilities cost cutoffs are not considered.
+        * Allocation of a demand point to a facility is disregarded if the maximum distance between the facility and the demand point is exceeded.
+        I.e., if the demand point is not within the distance cutoff of the facility.
 
         * Demand points within the cost cutoff of 2 or more facilities is allocated to the nearest facility.
 
@@ -64,14 +65,16 @@ class MaximizeCoverageMinimizeCost:
         :param facilities: Numpy array of shape (n_facilities, 2).
         :param dist_matrix: Numpy array of shape (n_points, n_facilities).
             The distance matrix of points to facilities.
-        :param dist_cutoff: Cost cutoff which can be used to
-            exclude points from the distance matrix which
-            feature a greater cost.
+        :param dist_cutoff: Excludes from consideration (location, facility) pairs that are more
+         than a maximum distance apart.
         :param facilities_to_site: The amount of facilites to choose,
             must be less than n_facilities.
-        :param load_distribution_weight: Una Help, defaults to 10
-        :param maximum_coverage_weight: Una Help, defaults to 100
-        :param total_distance_weight: Una Help, defaults to 1
+        :param load_distribution_weight: penalty weight that is multiplied by (maxLoad - minLoad), where maxLoad and minLoad are
+          the maximum and the minimum number of locations assigned to a facility.
+          It thus penalises uneven distribution of loads assigned to facilities. This penalty defaults to 10
+        :param maximum_coverage_weight: penalty weight that is multiplied by the number of sites that are not assigned to any of the facility.
+                  This penalty defaults to 100
+        :param total_distance_weight: penalty weight that is multiplied by the total distance. This weight defaults to 1.
         :param max_gap: Value indicating the tolerance for the maximum percentage deviation
             from the optimal solution cost, defaults to 0.1
         """
