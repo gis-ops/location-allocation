@@ -67,9 +67,5 @@ jobs:
       run: |
         source .venv/bin/activate
         pytest --cov=location_allocation tests/
-    - name: coveralls
-      run: |
-        source .venv/bin/activate
-        coveralls
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

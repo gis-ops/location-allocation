@@ -3,4 +3,5 @@ mip==1.13.0
 numpy==1.21.2
 pycparser==2.20
 pyparsing==2.4.7
+scipy==1.7.1
 six==1.16.0

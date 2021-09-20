@@ -636,7 +636,7 @@ name = "scipy"
 version = "1.7.1"
 description = "SciPy: Scientific Library for Python"
 category = "main"
-optional = true
+optional = false
 python-versions = ">=3.7,<3.10"
 
 [package.dependencies]
@@ -879,7 +879,7 @@ notebooks = ["matplotlib", "Shapely", "scikit-learn", "scipy", "numpy"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7,<3.10"
-content-hash = "3e7c970d670638db2f6b5c72814a4d05040f51f5866c3ce252410a346dc6d2b0"
+content-hash = "9b86580cdf7c72f413b7614d165036652e5926bd58458c5df93e5e3c22019a89"
 
 [metadata.files]
 alabaster = [
