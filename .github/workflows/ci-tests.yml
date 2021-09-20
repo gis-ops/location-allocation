@@ -30,7 +30,7 @@ jobs:
       matrix:
         python_version: [3.7, 3.8, 3.9]
         #python_version: [3.7, 3.8, 3.9, 'pypy-3.7']
-        os: [macos-latest, ubuntu-18.04, ubuntu-16.04, ubuntu-20.04, windows-2019, windows-2016]
+        os: [macos-latest, ubuntu-18.04, ubuntu-20.04, windows-2019, windows-2016]
         # exclude:
         #   # excludes pypy Windows because only 32 bit pypy is supported.
         #   - os: windows-2019
