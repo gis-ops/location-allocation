@@ -28,7 +28,7 @@ jobs:
         shell: bash
     strategy:
       matrix:
-        python_version: [3.7, 3.8, 3.9, pypy-3.7]
+        python_version: [3.7, 3.8, 3.9, 'pypy-3.7']
         os: [macos-latest, ubuntu-18.04, ubuntu-16.04, ubuntu-20.04, windows-2019, windows-2016]
         https://github.com/actions/virtual-environments/issues/2017
         exclude:
