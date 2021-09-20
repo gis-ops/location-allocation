@@ -33,11 +33,14 @@ class MaximizeCoverage:
         The problem aims to maximize the number of locations covered by at least one facility
         from the subset of K selected facilities.
 
-        **Notes** (Una to verify)
+        **Notes**
 
-        * Demand points exceeding the facilities cost cutoffs are not considered
+        * Allocation of a demand point to a facility is disregarded if the maximum distance between the facility and the demand point is exceeded.
+        I.e., if the demand point is not within the distance distance cutoff of the facility.
 
-        * Demand points within the cost cutoff of 2 or more facilities is allocated to the nearest facility
+        * Demand points within the distance cutoff of one candidate facility have all its weight allocated to it
+
+        * Demand points within the distance cutoff of 2 or more facilities is allocated to the nearest facility
 
         References:
         Church, R. and C. ReVelle, "The maximal covering location problem".
@@ -47,8 +50,8 @@ class MaximizeCoverage:
         :param facilities: Numpy array of shape (n_facilities, 2).
         :param dist_matrix: Numpy array of shape (n_points, n_facilities).
             The distance matrix of points to facilities.
-        :param dist_cutoff: Cost cutoff which can be used to exclude points
-            from the distance matrix which feature a greater cost.
+        :param dist_cutoff: distance cutoff which excludes from consideration (location, facility) pairs that are more
+         than a maximum distance apart.
         :param facilities_to_site: The amount of facilites to choose,
             must be less than n_facilities.
         :param max_gap: Value indicating the tolerance for the maximum percentage deviation
@@ -103,7 +106,7 @@ class MaximizeCoverage:
 
             * mip model <mip.model.Model> (https://docs.python-mip.com/en/latest/classes.html)
 
-            * optimized facility locations. class:`location_allocation._maximize_coverage.Result`.
+            * optimized facility locations. class:`location_allocation.common.Result`.
         """
         start = time.time()
         self.model.optimize(max_seconds=max_seconds)
