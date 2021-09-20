@@ -35,7 +35,7 @@ class MaximizeCoverageCapacitated:
         **Maximum Capacitated Coverage Location Problem**
 
         The result of this computation is a subset of candidate facilities such
-        that as many demand points as possible are allocated to these within the cost cutoff value
+        that as many demand points as possible are allocated to these within the distance cutoff value
         and considering the capacity of the facility itself.
 
         **Problem Objective**
@@ -48,21 +48,20 @@ class MaximizeCoverageCapacitated:
 
         **Notes**
 
-        * Demand points exceeding the facilities cost cutoffs are not considered.
-
-        * Demand points within the cost cutoff of one candidate facility has all its weight allocated to it.
+        * Allocation of a demand point to a facility is disregarded if the maximum distance between the facility and the demand point is exceeded.
+        I.e., if the demand point is not within the distance cutoff of the facility.
 
         * Demand points within the cost cutoff of 2 or more facilities is allocated to the nearest facility.
 
         * If the total demand of a facility is greater than the capacity of the facility,
-          only the demand points that maximize total captured demand and minimize total weighted impedance are allocated (Una verify)
+          only the demand points that maximize the total captured demand.
 
         :param points: Numpy array of shape (n_points, 2).
         :param facilities: Numpy array of shape (n_facilities, 2).
         :param cost_matrix: Numpy array of shape (n_points, n_facilities).
             The distance matrix of points to facilities.
-        :param cost_cutoff: Cost cutoff which can be used to exclude points
-            from the distance matrix which feature a greater cost.
+        :param cost_cutoff: distance cutoff which excludes from consideration (location, facility) pairs that are more
+         than a maximum distance apart.
         :param capacities: Numpy array of shape (n_capacities, ).
             Must be the same length as facilities with capacities as integers.
         :param facilities_to_site: The amount of facilites to choose,
