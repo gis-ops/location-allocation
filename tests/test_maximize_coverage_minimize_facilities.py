@@ -24,8 +24,8 @@ def test_maximize_coverage_minimize_facilities_near(demand, facilities):
 
     opt_facilities = facilities[list(mcmclp.result.solution.keys())]
     assert len(opt_facilities) == 2
-    assert np.alltrue(opt_facilities[0] == [-5, 10])
-    assert np.alltrue(opt_facilities[1] == [5, 10])
+    assert [5, 0] in opt_facilities
+    assert [-5, 10] in opt_facilities
 
 
 def test_maximize_coverage_minimize_facilities_far(demand, facilities):

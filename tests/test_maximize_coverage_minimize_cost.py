@@ -24,8 +24,8 @@ def test_maximize_coverage_minimize_cost_near(demand, facilities):
 
     opt_facilities = facilities[list(mcmclp.result.solution.keys())]
     assert len(opt_facilities) == 2
-    assert np.alltrue(opt_facilities[0] == [-5, 10])
-    assert np.alltrue(opt_facilities[1] == [5, 10])
+    assert [5, 0] in opt_facilities
+    assert [-5, 10] in opt_facilities
     # utils.plot_result(demand, mcmclp.result.solution, opt_facilities)
 
 
@@ -52,14 +52,6 @@ def test_maximize_coverage_minimize_cost_far(demand, facilities):
 
     opt_facilities = facilities[solution_keys]
     assert len(opt_facilities) == 2
-    assert np.alltrue(opt_facilities[0] == [5, 0])
-    assert np.alltrue(opt_facilities[1] == [-5, 10])
+    assert [5, 0] in opt_facilities
+    assert [-5, 10] in opt_facilities
     # utils.plot_result(demand, mcmclp.result.solution, opt_facilities)
-
-
-# objective function:
-# minimize the distance + maximize coverage + minimize difference between max facility and min facility allocation
-
-# load_distribution_weight=10,
-# maximum_coverage_weight=100,
-# total_distance_weight=1,

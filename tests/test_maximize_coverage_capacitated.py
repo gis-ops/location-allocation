@@ -32,8 +32,8 @@ def test_maximize_coverage_capacitated_full(demand, facilities, capacities):
         assert len(v) == 15 or len(v) == 14
 
     opt_facilities = facilities[list(mcclp.result.solution.keys())]
-    assert np.alltrue(opt_facilities[0] == [-5, 10])
-    assert np.alltrue(opt_facilities[1] == [5, 10])
+    assert [5, 0] in opt_facilities
+    assert [-5, 10] in opt_facilities
     # utils.plot_result(demand, mcclp.result.solution, opt_facilities)
 
 
@@ -56,7 +56,7 @@ def test_maximize_coverage_capacitated_partial(demand, facilities, capacities):
         assert len(v) == 8
 
     opt_facilities = facilities[list(mcclp.result.solution.keys())]
-    assert np.alltrue(opt_facilities[0] == [-5, 10])
-    assert np.alltrue(opt_facilities[1] == [5, 10])
+    assert [5, 0] in opt_facilities
+    assert [-5, 10] in opt_facilities
 
     # utils.plot_result(demand, mcclp.result.solution, opt_facilities)

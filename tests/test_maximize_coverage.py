@@ -20,8 +20,9 @@ def test_maximize_coverage_near(demand, facilities):
     ).optimize()
     print(mclp.config)
     assert len(mclp.result.solution["opt_facilities"]) == 2
-    assert np.alltrue(mclp.result.solution["opt_facilities"][0] == [-5, 10])
-    assert np.alltrue(mclp.result.solution["opt_facilities"][1] == [5, 10])
+    assert [5, 0] in mclp.result.solution["opt_facilities"]
+    assert [-5, 10] in mclp.result.solution["opt_facilities"]
+
     assert mclp.model.status == OptimizationStatus.OPTIMAL
 
 
@@ -39,8 +40,8 @@ def test_maximize_coverage_far(demand, facilities):
     ).optimize()
 
     assert len(mclp.result.solution["opt_facilities"]) == 2
-    assert np.alltrue(mclp.result.solution["opt_facilities"][0] == [-5, 10])
-    assert np.alltrue(mclp.result.solution["opt_facilities"][1] == [5, 10])
+    assert [5, 0] in mclp.result.solution["opt_facilities"]
+    assert [-5, 10] in mclp.result.solution["opt_facilities"]
     assert mclp.model.status == OptimizationStatus.OPTIMAL
 
 
