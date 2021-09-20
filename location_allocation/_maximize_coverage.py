@@ -16,8 +16,8 @@ class MaximizeCoverage:
         self,
         points: np.ndarray,
         facilities: np.ndarray,
-        cost_matrix: np.ndarray,
-        cost_cutoff,
+        dist_matrix: np.ndarray,
+        dist_cutoff,
         facilities_to_site,
         max_gap: float = 0.1,
     ):
@@ -37,8 +37,6 @@ class MaximizeCoverage:
 
         * Demand points exceeding the facilities cost cutoffs are not considered
 
-        * Demand points within the cost cutoff of one candidate facility has all its weight allocated to it
-
         * Demand points within the cost cutoff of 2 or more facilities is allocated to the nearest facility
 
         References:
@@ -47,9 +45,9 @@ class MaximizeCoverage:
 
         :param points:  Numpy array of shape (n_points, 2).
         :param facilities: Numpy array of shape (n_facilities, 2).
-        :param cost_matrix: Numpy array of shape (n_points, n_facilities).
+        :param dist_matrix: Numpy array of shape (n_points, n_facilities).
             The distance matrix of points to facilities.
-        :param cost_cutoff: Cost cutoff which can be used to exclude points
+        :param dist_cutoff: Cost cutoff which can be used to exclude points
             from the distance matrix which feature a greater cost.
         :param facilities_to_site: The amount of facilites to choose,
             must be less than n_facilities.
@@ -60,8 +58,8 @@ class MaximizeCoverage:
             self.__class__.__name__,
             points,
             facilities,
-            cost_matrix,
-            cost_cutoff,
+            dist_matrix,
+            dist_cutoff,
             facilities_to_site=facilities_to_site,
             max_gap=max_gap,
         )
@@ -69,9 +67,9 @@ class MaximizeCoverage:
         I = self.config.points.shape[0]
         J = self.config.facilities.shape[0]
 
-        mask1 = self.config.cost_matrix <= self.config.cost_cutoff
-        self.config.cost_matrix[mask1] = 1
-        self.config.cost_matrix[~mask1] = 0
+        mask1 = self.config.dist_matrix <= self.config.dist_cutoff
+        self.config.dist_matrix[mask1] = 1
+        self.config.dist_matrix[~mask1] = 0
 
         # Build model
         self.model = mip.Model()
@@ -88,7 +86,7 @@ class MaximizeCoverage:
 
         for i in range(I):
             self.model.add_constr(
-                mip.xsum(x[j] for j in np.where(self.config.cost_matrix[i] == 1)[0]) >= y[i]
+                mip.xsum(x[j] for j in np.where(self.config.dist_matrix[i] == 1)[0]) >= y[i]
             )
 
         self.model.objective = mip.maximize(mip.xsum(y[i] for i in range(I)))

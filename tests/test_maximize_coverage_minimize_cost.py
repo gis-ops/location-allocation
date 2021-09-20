@@ -7,13 +7,13 @@ from location_allocation import MaximizeCoverageMinimizeCost
 
 def test_maximize_coverage_minimize_cost_near(demand, facilities):
 
-    cost_matrix = distance_matrix(demand, facilities)
+    dist_matrix = distance_matrix(demand, facilities)
 
     mcmclp = MaximizeCoverageMinimizeCost(
         demand,
         facilities,
-        cost_matrix,
-        cost_cutoff=5,
+        dist_matrix,
+        dist_cutoff=5,
         facilities_to_site=2,
     ).optimize()
 
@@ -31,13 +31,13 @@ def test_maximize_coverage_minimize_cost_near(demand, facilities):
 
 def test_maximize_coverage_minimize_cost_far(demand, facilities):
 
-    cost_matrix = distance_matrix(demand, facilities)
+    dist_matrix = distance_matrix(demand, facilities)
 
     mcmclp = MaximizeCoverageMinimizeCost(
         demand,
         facilities,
-        cost_matrix,
-        cost_cutoff=7.5,
+        dist_matrix,
+        dist_cutoff=7.5,
         facilities_to_site=2,
     ).optimize()
 

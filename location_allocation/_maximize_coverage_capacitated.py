@@ -25,8 +25,8 @@ class MaximizeCoverageCapacitated:
         self,
         points: np.ndarray,
         facilities: np.ndarray,
-        cost_matrix: np.ndarray,
-        cost_cutoff: int,
+        dist_matrix: np.ndarray,
+        dist_cutoff: int,
         capacities: np.ndarray,
         facilities_to_site: int,
         max_gap: float = 0.1,
@@ -50,18 +50,14 @@ class MaximizeCoverageCapacitated:
 
         * Demand points exceeding the facilities cost cutoffs are not considered.
 
-        * Demand points within the cost cutoff of one candidate facility has all its weight allocated to it.
-
         * Demand points within the cost cutoff of 2 or more facilities is allocated to the nearest facility.
 
-        * If the total demand of a facility is greater than the capacity of the facility,
-          only the demand points that maximize total captured demand and minimize total weighted impedance are allocated (Una verify)
 
         :param points: Numpy array of shape (n_points, 2).
         :param facilities: Numpy array of shape (n_facilities, 2).
-        :param cost_matrix: Numpy array of shape (n_points, n_facilities).
+        :param dist_matrix: Numpy array of shape (n_points, n_facilities).
             The distance matrix of points to facilities.
-        :param cost_cutoff: Cost cutoff which can be used to exclude points
+        :param dist_cutoff: Cost cutoff which can be used to exclude points
             from the distance matrix which feature a greater cost.
         :param capacities: Numpy array of shape (n_capacities, ).
             Must be the same length as facilities with capacities as integers.
@@ -74,8 +70,8 @@ class MaximizeCoverageCapacitated:
             self.__class__.__name__,
             points,
             facilities,
-            cost_matrix,
-            cost_cutoff,
+            dist_matrix,
+            dist_cutoff,
             capacities=capacities,
             facilities_to_site=facilities_to_site,
             max_gap=max_gap,
@@ -85,9 +81,9 @@ class MaximizeCoverageCapacitated:
 
         I = self.config.points.shape[0]
         J = self.config.facilities.shape[0]
-        mask1 = self.config.cost_matrix <= self.config.cost_cutoff
-        self.config.cost_matrix[mask1] = 1
-        self.config.cost_matrix[~mask1] = 0
+        mask1 = self.config.dist_matrix <= self.config.dist_cutoff
+        self.config.dist_matrix[mask1] = 1
+        self.config.dist_matrix[~mask1] = 0
 
         self.model = mip.Model()
         x = {}  # is facility at site used
@@ -104,7 +100,7 @@ class MaximizeCoverageCapacitated:
                 z[i, j] = self.model.add_var(var_type=mip.BINARY, name="z" + str(i) + "_" + str(j))
 
         initial_solution = self.generate_initial_solution(
-            self.config.cost_matrix,
+            self.config.dist_matrix,
             I,
             J,
             self.config.capacities,
@@ -119,13 +115,13 @@ class MaximizeCoverageCapacitated:
 
         # a point cannot be allocated to facility if its not within the facility radius
         for i in range(I):
-            for j in np.where(self.config.cost_matrix[i] == 0)[0]:
+            for j in np.where(self.config.dist_matrix[i] == 0)[0]:
                 self.model.add_constr(z[i, j] == 0)
 
         # if point is covered, it needs to be covered by at least one facility
         for i in range(I):
             self.model.add_constr(
-                mip.xsum(z[i, j] for j in np.where(self.config.cost_matrix[i] == 1)[0]) >= y[i]
+                mip.xsum(z[i, j] for j in np.where(self.config.dist_matrix[i] == 1)[0]) >= y[i]
             )
 
         # the number of points allocated to facility must not exceed facility capacity

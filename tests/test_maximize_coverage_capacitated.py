@@ -9,15 +9,15 @@ from location_allocation import MaximizeCoverageCapacitated
 
 def test_maximize_coverage_capacitated_full(demand, facilities, capacities):
 
-    cost_matrix = distance_matrix(demand, facilities)
+    dist_matrix = distance_matrix(demand, facilities)
 
-    cost_cutoff = 15
+    dist_cutoff = 15
 
     mcclp = MaximizeCoverageCapacitated(
         demand,
         facilities,
-        cost_matrix,
-        cost_cutoff,
+        dist_matrix,
+        dist_cutoff,
         capacities,
         facilities_to_site=2,
     )
@@ -39,13 +39,13 @@ def test_maximize_coverage_capacitated_full(demand, facilities, capacities):
 
 def test_maximize_coverage_capacitated_partial(demand, facilities, capacities):
 
-    cost_matrix = distance_matrix(demand, facilities)
+    dist_matrix = distance_matrix(demand, facilities)
 
     mcclp = MaximizeCoverageCapacitated(
         demand,
         facilities,
-        cost_matrix,
-        cost_cutoff=2.5,
+        dist_matrix,
+        dist_cutoff=2.5,
         capacities=capacities,
         facilities_to_site=2,
     )
